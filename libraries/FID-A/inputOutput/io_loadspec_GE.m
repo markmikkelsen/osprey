@@ -33,24 +33,35 @@ function [out,out_ref,out_w]=io_loadspec_GE(filename,subspecs)
 %As far as I can tell, the data that comes out of the GELoad
 %function is normally a N x Navgs x Ncoils matrix.  The Navgs dimension
 %contains all the subspectra, so we will split them now:
-%If the data has multiple subspectra 
-if subspecs == 4  %HERMES/HERCULES
-    %Split the subspectra out of the "averages" dimension:
+%If the data has multiple subspectra
+%Split the subspectra out of the "averages" dimension:
+%MM (260831): Adding prephasing corrections for sLASER and unedited PRESS
+if subspecs==4 %HERMES/HERCULES
     data(:,:,:,1)=GEout(:,1:4:end,:);
     data(:,:,:,2)=GEout(:,2:4:end,:);
     data(:,:,:,3)=GEout(:,3:4:end,:);
     data(:,:,:,4)=GEout(:,4:4:end,:);
-else if  subspecs==2 %MEGA   
-        %Split the subspectra out of the "averages" dimension:
-        data(:,:,:,1)=GEout(:,1:2:end,:);
-        data(:,:,:,2)=GEout(:,2:2:end,:);
-    else
-        data=GEout;
-    end
+elseif subspecs==2 %MEGA
+    data(:,:,:,1)=GEout(:,1:2:end,:);
+    data(:,:,:,2)=GEout(:,2:2:end,:);
+else
+    data=GEout;
+end
+
+data_ref=GEout_ref;
+
+if subspecs>1 && strcmpi(GEhdr.seq,'slaser')
+    data(:,:,2:2:end,:)=-data(:,:,2:2:end,:);
+    data_ref(:,2:2:end,:)=-data_ref(:,2:2:end,:);
+end
+
+if subspecs==1
+    data(:,2:2:end,:)=-data(:,2:2:end,:);
+    data_ref(:,2:2:end,:)=-data_ref(:,2:2:end,:);
 end
 
 fids=squeeze(data);
-fids_ref=squeeze(GEout_ref);
+fids_ref=squeeze(data_ref);
 
 %swap the averages and the coils dimensions:
 fids=permute(fids,[1,3,2,4]);
@@ -198,7 +209,7 @@ out.averages=averages;
 out.rawAverages=rawAverages;
 out.subspecs=subspecs;
 out.rawSubspecs=rawSubspecs;
-out.seq='';
+out.seq=GEhdr.seq;
 out.te=GEhdr.TE;
 out.tr=GEhdr.TR;
 out.pointsToLeftshift=0;
@@ -214,8 +225,6 @@ if isnumeric(GEhdr.version)
 else
     out.software = ['Rev_number ' GEhdr.version];
 end
-out.nucleus = GEhdr.nucleus;
-
 %FILLING IN THE FLAGS
 out.flags.writtentostruct=1;
 out.flags.gotparams=1;
@@ -253,7 +262,7 @@ out_ref.averages=averages_w;
 out_ref.rawAverages=rawAverages_w;
 out_ref.subspecs=subspecs_w;
 out_ref.rawSubspecs=rawSubspecs_w;
-out_ref.seq='';
+out_ref.seq=GEhdr.seq;
 out_ref.te=GEhdr.TE;
 out_ref.tr=GEhdr.TR;
 out_ref.pointsToLeftshift=0;
@@ -265,7 +274,6 @@ out_ref.geometry.size.dim1 = temp(1);
 out_ref.geometry.size.dim2 = temp(2);
 out_ref.geometry.size.dim3 = temp(3);
 out_ref.software = out.software;
-out_ref.nucleus = out.nucleus;
 % Add info for niiwrite
 out_ref.PatientPosition = '';
 out_ref.Manufacturer = 'GE';

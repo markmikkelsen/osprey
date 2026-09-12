@@ -31,7 +31,7 @@
 % sig           = Vector of coil weights.
 
          
-function [out,fids_presum,specs_presum,ph,sig]=op_addrcvrs(in,point,mode,coilcombos);
+function [out,fids_presum,specs_presum,ph,sig]=op_addrcvrs(in,point,mode,coilcombos)
 
 if in.flags.addedrcvrs
     error('ERROR:  Receivers have already been combined!  Aborting!');
@@ -62,6 +62,23 @@ end
 avfids=av.fids;
 avspecs=av.specs;
 
+if strcmp(mode,'gls') && nargin==4
+    noisepts=false(1,in.sz(in.dims.t));
+    noisepts(ceil(0.75*in.sz(in.dims.t)):end)=true;
+    if in.subspecs>1
+        noisepts=repmat(noisepts,[1 in.sz(in.dims.averages)*in.sz(in.dims.subSpecs)]);
+        tmpfids=reshape(in.fids,[in.sz(in.dims.coils) in.sz(in.dims.t)*in.sz(in.dims.averages)*in.sz(in.dims.subSpecs)]);
+    else
+        noisepts=repmat(noisepts,[1 in.sz(in.dims.averages)]);
+        tmpfids=reshape(in.fids,[in.sz(in.dims.coils) in.sz(in.dims.t)*in.sz(in.dims.averages)]);
+    end
+
+    e=tmpfids(:,noisepts);
+    Psi=e*e';
+    coilcombos.w=(coilcombos.sig'*(Psi\coilcombos.sig))^-1*coilcombos.sig'/Psi;
+    coilcombos.w=coilcombos.w.';
+end
+
 %initialize phase matrix and the amplitude maxtrix that are the size of nPoints x Coils
 %ph=ones(in.sz(in.dims.t),in.sz(in.dims.coils));
 %sig=ones(in.sz(in.dims.t),in.sz(in.dims.coils));
@@ -86,6 +103,9 @@ for n=1:in.sz(in.dims.coils)
         %ph(:,n)=coilcombos.ph(n)*ph(:,n);
         phs(n)=coilcombos.ph(n);
         sigs(n)=coilcombos.sig(n);
+        if strcmp(mode,'gls')
+            wgts(n)=coilcombos.w(n);
+        end
     end
 end
 
@@ -95,47 +115,71 @@ end
 % replicate(in.dims.coils)=1;
 % ph=repmat(ph,replicate);
 % sig=repmat(sig,replicate);
-sigs=sigs/norm(sigs(:));
+if ~strcmp(mode,'gls')
+    sigs=sigs/norm(sigs(:));
+end
 
 ph=ones(in.sz);
 sig=ones(in.sz);
+w=ones(in.sz);
 
 if in.dims.coils==1
     for n=1:in.sz(1)
         ph(n,:)=phs(n)*ph(n,:);
         sig(n,:)=sigs(n)*sig(n,:);
+        if strcmp(mode,'gls')
+            w(n,:)=wgts(n)*w(n,:);
+        end
     end
 elseif in.dims.coils==2
     for n=1:in.sz(2)
         ph(:,n,:)=phs(n)*ph(:,n,:);
         sig(:,n,:)=sigs(n)*sig(:,n,:);
+        if strcmp(mode,'gls')
+            w(:,n,:)=wgts(n)*w(:,n,:);
+        end
     end
 elseif in.dims.coils==3
     for n=1:in.sz(3)
         ph(:,:,n,:)=phs(n)*ph(:,:,n,:);
         sig(:,:,n,:)=sigs(n)*sig(:,:,n,:);
+        if strcmp(mode,'gls')
+            w(:,:,n,:)=wgts(n)*w(:,:,n,:);
+        end
     end
 elseif in.dims.coils==4
     for n=1:in.sz(4)
         ph(:,:,:,n,:)=phs(n)*ph(:,:,:,n,:);
         sig(:,:,:,n,:)=sigs(n)*sig(:,:,:,n,:);
+        if strcmp(mode,'gls')
+            w(:,:,:,n,:)=wgts(n)*w(:,:,:,n,:);
+        end
     end
 elseif in.dims.coils==5
     for n=1:in.sz(5)
         ph(:,:,:,:,n)=phs(n)*ph(:,:,:,:,n);
         sig(:,:,:,:,n)=sigs(n)*sig(:,:,:,:,n);
+        if strcmp(mode,'gls')
+            w(:,:,:,:,n,:)=wgts(n)*w(:,:,:,:,n,:);
+        end
     end
 end
 
 
 %now apply the phases by multiplying the data by exp(-i*ph);
-fids=in.fids.*exp(-i*ph);
+if ~strcmp(mode,'gls')
+    fids=in.fids.*exp(-1i*ph);
+else
+    fids=in.fids;
+end
 fids_presum=fids;
 specs_presum=fftshift(fft(fids,[],in.dims.t),in.dims.t);
 
 %Apply the amplitude factors by multiplying the data by amp;
-if mode=='w' || mode=='h'
+if any(strcmp(mode,{'w','h'}))
     fids=fids.*sig;
+elseif strcmp(mode,'gls')
+    fids=w.*fids;
 end
 
 

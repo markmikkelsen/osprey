@@ -29,7 +29,7 @@
 % OUTPUTS:
 % coilcombos         = Structure containing the calculated coil weights and phases. 
 
-function coilcombos=op_getcoilcombos(file_or_struct,point,mode);
+function coilcombos=op_getcoilcombos(file_or_struct,point,mode)
 
 
 if isstr(file_or_struct)
@@ -52,31 +52,40 @@ end
 coilcombos.ph=zeros(in.sz(in.dims.coils),1);
 coilcombos.sig=zeros(in.sz(in.dims.coils),1);
 
-for n=1:in.sz(in.dims.coils);
-    coilcombos.ph(n)=angle(in.fids(point,n,1,1));
-    switch mode
-        case 'w'
-            coilcombos.sig(n)=abs(in.fids(point,n,1,1));
-        case 'h'
-            S(n)=abs(in.fids(point,n,1,1));
-            
-            % Get noise from frequency domain because it is easier to
-            % detrend
-            noiseppmmin = -2.5;
-            noiseppmmax = -0.5;
-            
-            noisewindow=in.specs(in.ppm>noiseppmmin & in.ppm<noiseppmmax,n,1,1);
-            ppmwindow2=in.ppm(in.ppm>noiseppmmin & in.ppm<noiseppmmax)';
-            
-            P=polyfit(ppmwindow2,noisewindow,2);
-            noise=noisewindow-polyval(P,ppmwindow2);
+switch mode
+    case 'gls'
+        fids_avg=mean(in.fids,in.dims.averages);
+        coilcombos.sig=fids_avg(1,:).';
+    otherwise
+        for n=1:in.sz(in.dims.coils)
+            coilcombos.ph(n)=angle(in.fids(point,n,1,1));
+            switch mode
+                case 'w'
+                    coilcombos.sig(n)=abs(in.fids(point,n,1,1));
+                case 'h'
+                    S(n)=abs(in.fids(point,n,1,1));
 
-            N(n)=std(noise);
-            coilcombos.sig(n)=S(n)./(N(n).^2);
-    end
+                    % Get noise from frequency domain because it is easier to
+                    % detrend
+                    noiseppmmin = -2.5;
+                    noiseppmmax = -0.5;
+
+                    noisewindow=in.specs(in.ppm>noiseppmmin & in.ppm<noiseppmmax,n,1,1);
+                    ppmwindow2=in.ppm(in.ppm>noiseppmmin & in.ppm<noiseppmmax)';
+
+                    P=polyfit(ppmwindow2,noisewindow,2);
+                    noise=noisewindow-polyval(P,ppmwindow2);
+
+                    N(n)=std(noise);
+                    coilcombos.sig(n)=S(n)./(N(n).^2);
+            end
+        end
 end
 
 %Now normalize the coilcombos.sig so that the max amplitude is 1;
-coilcombos.sig=coilcombos.sig/max(coilcombos.sig);
+if ~strcmp(mode,'gls')
+    coilcombos.sig=coilcombos.sig/max(coilcombos.sig);
+end
+
 
 

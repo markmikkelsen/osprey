@@ -58,7 +58,12 @@ if ~isfield(basisSet,'specs')
 end
 
 % Generate a new figure and keep the handle memorized
-out = figure;
+if MRSCont.opts.showFigs % MM (250411)
+    vis = 'on';
+else
+    vis = 'off';
+end
+out = figure('Visible', vis);
 % Prepare a couple of useful variables
 nBasisFct = basisSet.nMets;
 if isfield(basisSet, 'nMM')
