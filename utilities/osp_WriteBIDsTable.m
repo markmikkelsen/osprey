@@ -14,7 +14,7 @@ writetable(Table,[OutLoc,'.txt'],'Delimiter','\t'); % Write table with tab delim
 movefile([OutLoc,'.txt'],[OutLoc,'.tsv']); % Change file extension to tsv
 fprintf('Writing table to file = %s\n', [OutLoc,'.tsv']);
 
-if length(Table.Properties.VariableNames) > 0
+if ~isempty(Table.Properties.VariableNames)
 	for JJ=1:length(Table.Properties.VariableNames)
 		JSON.(Table.Properties.VariableNames{JJ}).LongName = Table.Properties.CustomProperties.VariableLongNames{JJ};
 		JSON.(Table.Properties.VariableNames{JJ}).Description = Table.Properties.VariableDescriptions{JJ};
