@@ -76,7 +76,7 @@ else
     progressText = '';
 end
 for kk = 1:MRSCont.nDatasets(1)
-     [~] = printLog('OspreyCoreg',kk,1,MRSCont.nDatasets,progressText,MRSCont.flags.isGUI ,MRSCont.flags.isMRSI);  
+     [~] = printLog('OspreyCoreg',kk,1,MRSCont.nDatasets(1),progressText,MRSCont.flags.isGUI ,MRSCont.flags.isMRSI);  
     if ~(MRSCont.flags.didCoreg == 1 && MRSCont.flags.speedUp && isfield(MRSCont, 'coreg') && (kk > length(MRSCont.coreg.vol_image))) || ~strcmp(MRSCont.ver.Osp,MRSCont.ver.CheckOsp)
         
         if SameName
@@ -231,7 +231,7 @@ for kk = 1:MRSCont.nDatasets(1)
     end
 end
 time = toc(refCoregTime);
-[~] = printLog('done',time,1,MRSCont.nDatasets,progressText,MRSCont.flags.isGUI ,MRSCont.flags.isMRSI); 
+[~] = printLog('done',time,1,MRSCont.nDatasets(1),progressText,MRSCont.flags.isGUI ,MRSCont.flags.isMRSI); 
 MRSCont.runtime.Coreg = time;
 %% Clean up and save
 % Set exit flags and version
@@ -256,7 +256,9 @@ if MRSCont.flags.isGUI
     save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
     MRSCont.flags.isGUI = 1;
 else
-   save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    if MRSCont.opts.saveCont
+        save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    end
 end
 
 end
