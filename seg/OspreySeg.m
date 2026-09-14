@@ -687,7 +687,9 @@ if MRSCont.flags.isGUI
     save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
     MRSCont.flags.isGUI = 1;
 else
-   save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    if MRSCont.opts.saveCont
+        save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    end
 end
 
 end

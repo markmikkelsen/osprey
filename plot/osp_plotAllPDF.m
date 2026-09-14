@@ -55,7 +55,7 @@ if  ~MRSCont.flags.isPRIAM && ~MRSCont.flags.isMRSI
                         end
                     end
                 end
-            end
+            end            
         case 'OspreyFit'
             Names = {'metab'}; 
             if MRSCont.flags.hasMM
@@ -68,12 +68,12 @@ if  ~MRSCont.flags.isPRIAM && ~MRSCont.flags.isMRSI
                 Names{end+1} = 'w';
             end
                 
-            for kk = 1 : MRSCont.nDatasets(1)
-                for mm = 1 : length(Names)
+            for kk = 1:MRSCont.nDatasets(1)
+                for mm = 1:length(Names)
                     if isfield(MRSCont.fit.results,Names{mm})
-                        for bb = 1 : size(MRSCont.fit.results.(Names{mm}).fitParams,1)
-                            for ss = 1 : size(MRSCont.fit.results.(Names{mm}).fitParams,3)
-                                osp_plotModule(MRSCont, 'OspreyFit', kk,[bb ss], Names{mm});
+                        for bb = 1:size(MRSCont.fit.results.(Names{mm}).fitParams,1)
+                            for ss = 1:size(MRSCont.fit.results.(Names{mm}).fitParams,3)
+                                osp_plotModule(MRSCont, 'OspreyFit', kk, [bb ss], Names{mm});
                             end
                         end
                     end

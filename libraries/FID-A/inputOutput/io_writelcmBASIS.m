@@ -27,7 +27,7 @@
 %   HISTORY:
 %       2020-02-11: First version of the code.
 
-function RF=io_writelcmBASIS(in,outfile,vendor,SEQ,subspec)
+function RF=io_writelcmBASIS(in, outfile, vendor, SEQ, subspec)
 
 metabList = fit_createMetabList({'full'});
 
@@ -39,8 +39,8 @@ end
 % Create the modified basis set without macro molecules 
 basisSet = fit_selectMetabs(in, metabList, 0);
 
-Bo=basisSet.Bo;
-HZPPPM=42.577*Bo;
+Bo = basisSet.Bo;
+HZPPPM = 42.577*Bo;
 FWHMBA = basisSet.linewidth/HZPPPM;
 ECHOT = basisSet.te;
   
@@ -63,7 +63,7 @@ fprintf(fid,'\n FMTBAS = ''(2E15.6)'',');
 fprintf(fid,'\n BADELT = %5.6f,',BADELT);
 fprintf(fid,'\n NDATAB = %i', NDATAB);
 fprintf(fid,'\n $END\n');
-for i = 1 : basisSet.nMets
+for i = 1:basisSet.nMets
     if ~strcmp(basisSet.name{i}, 'CrCH2') && ~strcmp(basisSet.name{i}, 'H2O')
         RF = shift_centerFreq(basisSet,i,subspec);
         fprintf(fid,' $NMUSED');

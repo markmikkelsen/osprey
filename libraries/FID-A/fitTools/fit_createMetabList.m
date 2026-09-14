@@ -1,13 +1,14 @@
+
 % fit_createMetabList.m
 % Georg Oeltzschner, Johns Hopkins University 2019.
 %
 % USAGE:
 % metabList = fit_createMetabList;
-% 
+%
 % DESCRIPTION:
-% Creates a list of metabolite basis functions that are to be included in 
+% Creates a list of metabolite basis functions that are to be included in
 % a fit.
-% 
+%
 % OUTPUTS:
 % metabList = structure including flags (1 = included, 0 = excluded) for
 %             each metabolite included in the FID-A spin system definition,
@@ -30,15 +31,15 @@ end
 
 % Select metabolites to include in basis set depending on user input
 % If 'default' or 'full' are input, fill appropriately...
-if length(includeMetabs) == 1
+if isscalar(includeMetabs)
     if strcmpi(includeMetabs{1}, 'default')
         % Define the default set
         defaultMets = {'Asc','Asp','Cr','CrCH2' ...
-                     ,'GABA','GPC','GSH','Gln','Glu' ...
-                     ,'mI','Lac','NAA','NAAG','PCh','PCr','PE' ...
-                     ,'sI','Tau','MM09' ...
-                     ,'MM12','MM14','MM17','MM20','Lip09','Lip13','Lip20'};
-                 
+            ,'GABA','GPC','GSH','Gln','Glu' ...
+            ,'mI','Lac','NAA','NAAG','PCh','PCr','PE' ...
+            ,'sI','Tau','MM09' ...
+            ,'MM12','MM14','MM17','MM20','Lip09','Lip13','Lip20'};
+
         for ll = 1:length(defaultMets)
             metabList.(defaultMets{ll}) = 1;
         end

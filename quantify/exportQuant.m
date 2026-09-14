@@ -7,18 +7,18 @@ else
 end
 
 for ss = 1:size(MRSCont.quantify.names.metab,2)
-    for q = 1 : length(quants)
+    for q = 1:length(quants)
         if isfield(MRSCont.quantify.tables.metab, quants(q))
-            for mm = 1 : size(MRSCont.quantify.names.metab,1)
+            for mm = 1:size(MRSCont.quantify.names.metab,1)
                 if ~isempty(MRSCont.quantify.names.metab{mm,ss})  
                     if ~MRSCont.flags.isPRIAM
                         MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss} = PopulateJSON(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss},quants{q});
-                        osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss}, [saveDestination  filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_1_Basis_' num2str(mm)]);
+                        osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss}, [saveDestination filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_1_Basis_' num2str(mm)]);
                     else                    
                         MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss} = PopulateJSON(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss},quants{q});
-                        osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss}, [saveDestination  filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_1_Basis_' num2str(mm)]);
+                        osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss}, [saveDestination filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_1_Basis_' num2str(mm)]);
                         MRSCont.quantify.tables.metab.(quants{q}).Voxel_2{mm,ss} = PopulateJSON(MRSCont.quantify.tables.metab.(quants{q}).Voxel_2{mm,ss},quants{q});
-                        osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_2{mm,ss}, [saveDestination  filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_2_Basis_' num2str(mm)]);
+                        osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_2{mm,ss}, [saveDestination filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_2_Basis_' num2str(mm)]);
                     end
                 end
             end
@@ -29,7 +29,7 @@ end
 
 end
 
-function[Table] = PopulateJSON(Table, Quant)
+function Table = PopulateJSON(Table, Quant)
 
 Table = addprop(Table, {'VariableLongNames'}, {'variable'}); % add long name to table properties
 
@@ -74,7 +74,7 @@ switch Quant
 end
 
 % input L, D, and u in to Table structure and parse this back to main function
-for JJ=1:length(Table.Properties.VariableNames)
+for JJ = 1:length(Table.Properties.VariableNames)
     Table.Properties.CustomProperties.VariableLongNames{JJ} = sprintf(L,Table.Properties.VariableNames{JJ});  
     Table.Properties.VariableDescriptions{JJ} = sprintf(D,Table.Properties.VariableNames{JJ});
     Table.Properties.VariableUnits{JJ} = u;

@@ -236,7 +236,7 @@ par.ampl = par.ampl(:,1:27);
 %% Generate in vivo like spectrum
 MRSCont.nDatasets = nDatasets *NoGroups;
 basisSetBckp = basisSet;
-for kk = 1 : MRSCont.nDatasets
+for kk = 1 : MRSCont.nDatasets(1)
     
 
     basisSet =basisSetBckp;
@@ -401,7 +401,7 @@ mm_ll = 1;
 ref_ll = 1;
 w_ll = 1;
 ref_mm_ll=1;
-for kk = 1 : MRSCont.nDatasets
+for kk = 1 : MRSCont.nDatasets(1)
     raw = MRSCont.processed.metab{metab_ll,kk};
     [raw,SNR] = op_get_Multispectra_SNR(raw);
     FWHM = op_get_Multispectra_LW(raw);
@@ -458,7 +458,7 @@ end
 SubSpecNames = fieldnames(MRSCont.processed);
 NoSubSpec = length(fieldnames(MRSCont.processed));
 for ss = 1 : NoSubSpec
-    for kk = 1 : MRSCont.nDatasets
+    for kk = 1 : MRSCont.nDatasets(1)
             temp_sz(1,kk)= MRSCont.processed.(SubSpecNames{ss}){1,kk}.sz(1);
             temp_sz_sw{1,kk} = ['np_sw_' num2str(MRSCont.processed.(SubSpecNames{ss}){1,kk}.sz(1)) '_' num2str(MRSCont.processed.(SubSpecNames{ss}){1,kk}.spectralwidth)];   
     end
