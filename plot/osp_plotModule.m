@@ -615,17 +615,17 @@ switch Module
                                 end
                             case 'LCModel'
                         end
-                        NameText = [''];
-                        RawAmplText = [''];
-                        CRLBText    = [''];
-                        for m = 1 : length(RawAmpl) %Names and Amplitudes
+                        NameText    = '';
+                        RawAmplText = '';
+                        CRLBText    = '';
+                        for m = 1:length(RawAmpl) %Names and Amplitudes
                             NameText = [NameText, [basisSetNames{m} ' \n']];
                             RawAmplText = [RawAmplText, [num2str(RawAmpl(m),'%1.2e') '\n']];
                             if strcmp(MRSCont.opts.fit.method, 'LCModel')
                                 CRLBText = [CRLBText, [num2str(CRLB(m), '%i') '%%\n']];
                             end
                         end
-                        set(Results, 'Title', ['Raw Water Ratio']);
+                        set(Results, 'Title', 'Raw Water Ratio');
                         FitText = uix.HBox('Parent', Results, 'Padding', 5,'BackgroundColor',colormapfig.Background);
                         FitTextNames  = uicontrol('Parent',FitText,'style','text',...
                         'FontSize', 11, 'FontName', font,'HorizontalAlignment', 'left', 'String', sprintf(NameText),...
@@ -634,9 +634,9 @@ switch Module
                         'FontSize', 11, 'FontName', font,'HorizontalAlignment', 'left', 'String', sprintf(RawAmplText),...
                         'BackgroundColor',colormapfig.Background,'ForegroundColor', colormapfig.Foreground);
                     else %Water/reference fit
-                       NameText = ['Water: ' ];
+                       NameText = 'Water: ' ;
                        RawAmplText = [num2str(RawAmpl,'%1.2e')];
-                       set(Results, 'Title', ['Raw Amplitudes']);
+                       set(Results, 'Title', 'Raw Amplitudes');
                        FitText = uix.HBox('Parent', Results, 'Padding', 5,'BackgroundColor',colormapfig.Background);
                        FitTextNames  = uicontrol('Parent',FitText,'style','text',...
                        'FontSize', 11, 'FontName', font,'HorizontalAlignment', 'left', 'String', sprintf(NameText),...
@@ -972,7 +972,21 @@ out.PaperSize = [fig_pos(3) fig_pos(4)];
 % print(fig,'-dpdf','-painters','-r600','-bestfit',strcat(plot_path,plot_name));
 
 % print(out,fullfile(outputFolder,outputFile),'-dpdf') % then print it
-saveas(out,fullfile(outputFolder,outputFile),'pdf');
+
+% MATLAB R2025b and newer refuse to print/saveas any figure that contains
+% UI components, and the layout above is built from GUI Layout Toolbox
+% panels (uix = uipanel) plus uicontrol info text. exportapp handles those,
+% but it only renders them if the figure is on screen, so show it briefly.
+% NB: test with exist, not which -- 'which' is an input argument here.
+if exist('exportapp','file') == 0
+    saveas(out,fullfile(outputFolder,outputFile),'pdf');
+else
+    prevVis = out.Visible;
+    out.Visible = 'on';
+    drawnow;
+    exportapp(out,fullfile(outputFolder,outputFile));
+    out.Visible = prevVis;
+end
 h = findall(groot,'Type','figure');
 for ff = 1 : length(h)
     if ~(strcmp(h(ff).Tag, 'Osprey') ||  strcmp(h(ff).Tag, 'TMWWaitbar'))
