@@ -133,7 +133,12 @@ if strcmp(quant, 'Quality')
 end
 %%% 4. CREATE RAINCLOUD PLOT %%%
 % Generate a new figure and keep the handle memorized
-out_rain = figure('Color', 'w');
+if MRSCont.opts.showFigs % MM (250411)
+    vis = 'on';
+else
+    vis = 'off';
+end
+out_rain = figure('Color', 'w', 'Visible', vis);
 hold on
 % Calculate ksdensities of all groups and keep the maximum for
 % normalization

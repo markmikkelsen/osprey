@@ -127,7 +127,12 @@ end
 %%% 4. SET UP FIGURE LAYOUT %%%
 % Generate a new figure and keep the handle memorized
 if ~MRSCont.flags.isGUI
-    out = figure;
+    if MRSCont.opts.showFigs % MM (250411)
+        vis = 'on';
+    else
+        vis = 'off';
+    end
+    out = figure('Visible',vis);
     set(gcf, 'Color', 'w');
 else
     out = figure('Visible','off');

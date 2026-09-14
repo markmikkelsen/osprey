@@ -143,7 +143,12 @@ if strcmp(quant, 'AlphaCorrWaterScaledGroupNormed')
 end
 %%% 4. CREATE CORRELATION PLOT %%%
 % Generate a new figure and keep the handle memorized
-out_scat = figure('Color', 'w');
+if MRSCont.opts.showFigs % MM (250411)
+    vis = 'on';
+else
+    vis = 'off';
+end
+out_scat = figure('Color', 'w', 'Visible', vis);
 % Scatter plot with separate groups and correlatios and create legend
 for g = 1 : MRSCont.overview.NoGroups
     x_tmp = corrData(MRSCont.overview.groups == g);

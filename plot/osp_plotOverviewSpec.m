@@ -157,7 +157,12 @@ end
 if MRSCont.flags.isGUI
     out = figure( 'Visible', 'off' );
 else
-    out = figure;
+    if MRSCont.opts.showFigs % MM (250411)
+        vis = 'on';
+    else
+        vis = 'off';
+    end
+    out = figure('Visible',vis);
 end
 
 %%% 3. PLOT DATA %%%

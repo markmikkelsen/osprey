@@ -265,7 +265,12 @@ end
 shift = maxshift_abs * shift;
 %%% 3. SET UP FIGURE LAYOUT %%%
 % Generate a new figure and keep the handle memorized
-out = figure('Visible','on');
+if MRSCont.opts.showFigs % MM (250411)
+    vis = 'on';
+else
+    vis = 'off';
+end
+out = figure('Visible',vis);
 hold on
 
 %%% 4. PLOT DATA, FIT, RESIDUAL, BASELINE %%%

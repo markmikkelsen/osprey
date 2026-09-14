@@ -78,7 +78,12 @@ end
 
 
 if ~MRSCont.flags.isGUI
-    out = figure('Visible','off');
+    if MRSCont.opts.showFigs % MM (250411)
+        vis = 'on';
+    else
+        vis = 'off';
+    end
+    out = figure('Visible',vis);
     set(gcf, 'Color', 'w');
 else
     out = figure('Visible','off');

@@ -265,11 +265,15 @@ switch fitMethod
             % Get the fit parameters; they will be passed to the model
             % output in the next step
             if (MRSCont.flags.isPRIAM == 1)
-                fitParams   = MRSCont.fit.results{VoxelIndex}.(which_spec).fitParams{kk};
+                fitParams = MRSCont.fit.results{VoxelIndex}.(which_spec).fitParams{kk};
             elseif (MRSCont.flags.isMRSI == 1)
-                fitParams   = MRSCont.fit.results{VoxelIndex(1), VoxelIndex(2)}.(which_spec).fitParams{kk};
+                fitParams = MRSCont.fit.results{VoxelIndex(1), VoxelIndex(2)}.(which_spec).fitParams{kk};
             else
-                fitParams   = MRSCont.fit.results.(which_spec).fitParams{VoxelIndex(3),kk,VoxelIndex(2)};
+                fitParams = MRSCont.fit.results.(which_spec).fitParams{VoxelIndex(3),kk,VoxelIndex(2)};
+                idx = find(strcmp(fitParams.name(:), {'MM14'})); % MM (250410)
+                if ~isempty(idx)
+                    fitParams.name(idx) = [];
+                end
             end
 
         end
@@ -326,13 +330,13 @@ switch fitMethod
     case 'LCModel'
         if strcmp(which_spec, 'ref') || strcmp(which_spec, 'w')
             % Just load the water spectrum (we don't have a fit)
-            waterSpec         = op_freqrange(MRSCont.processed.(which_spec){kk}, 0, 9);
-            ModelOutput.data  = real(waterSpec.specs);
-            ModelOutput.ppm   = waterSpec.ppm;
+            waterSpec        = op_freqrange(MRSCont.processed.(which_spec){kk}, 0, 9);
+            ModelOutput.data = real(waterSpec.specs);
+            ModelOutput.ppm  = waterSpec.ppm;
         else
             % Get the LCModel plots we previously extracted from .coord
             % etc.
-            [ModelOutput] = fit_LCModelParamsToModel(fitParams);
+            ModelOutput = fit_LCModelParamsToModel(fitParams);
         end
 
 end
@@ -354,7 +358,12 @@ canvasSize  = get(0,'defaultfigureposition');
 if stagFlag && ~(strcmp(which_spec, 'ref') || strcmp(which_spec, 'w'))
     canvasSize(4) = canvasSize(4) * 1.8;
 end
-out = figure('Position', canvasSize);
+if MRSCont.opts.showFigs % MM (250411)
+    vis = 'on';
+else
+    vis = 'off';
+end
+out = figure('Position', canvasSize, 'Visible', vis);
 % Prepare a couple of useful variables
 switch fitMethod
     case 'Osprey'
@@ -366,7 +375,7 @@ switch fitMethod
         % Number of metabolites and lipid/MM basis functions
         nBasisFct = length(fitParams.name);
         nComb   = sum(~cellfun(@isempty, strfind(fitParams.name, '_')));
-        nBasisFct =  nBasisFct - nComb; % We don't plot the combinations
+        nBasisFct = nBasisFct - nComb; % We don't plot the combinations
 end
 
 
@@ -412,9 +421,7 @@ switch fitMethod
             indivPlots(:,contains(basisSetNames,'_')) = [];
             basisSetNames(contains(basisSetNames,'_')) = [];
         end
-
 end
-
 
 if isfield(MRSCont.plot,'fit') && MRSCont.plot.fit.match
     if strcmp(which_spec, 'conc')

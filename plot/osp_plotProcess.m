@@ -52,7 +52,7 @@ if nargin<8
         switch which_spec
             case {'A', 'B', 'C', 'D', 'diff1', 'diff2','diff3', 'sum','metab'}
                 ppmmin = 0.2;
-            case {'ref', 'w','mm','mm_ref','A_mm', 'B_mm', 'C_mm', 'D_mm', 'diff1_mm', 'diff2_mm','diff3_mm', 'sum_mm','mm'}
+            case {'ref', 'w','mm','mm_ref','A_mm', 'B_mm', 'C_mm', 'D_mm', 'diff1_mm', 'diff2_mm','diff3_mm', 'sum_mm'}
                 ppmmin = 0;
             otherwise
                 error('Input for variable ''which'' not recognized. Needs to be ''mets'' (metabolite data), ''ref'' (reference data), or ''w'' (short-TE water data).');
@@ -382,7 +382,12 @@ end
 %%% 3. SET UP FIGURE LAYOUT %%%
 % Generate a new figure and keep the handle memorized
 if ~MRSCont.flags.isGUI
-    out = figure;
+    if MRSCont.opts.showFigs % MM (250411)
+        vis = 'on';
+    else
+        vis = 'off';
+    end
+    out = figure('Visible',vis);
 else
     out = figure('Visible','off');
 end
@@ -973,8 +978,6 @@ if isfield(MRSCont,'plot') && isfield(MRSCont.plot, 'processed') && (MRSCont.plo
             y = [min(MRSCont.plot.processed.(which_spec).min) max(MRSCont.plot.processed.(which_spec).max)];
         else
             if MRSCont.flags.isMEGA || MRSCont.flags.isHERMES || MRSCont.flags.isHERCULES
-                y = [min(MRSCont.plot.processed.(which_spec).min) max(MRSCont.plot.processed.(which_spec).max)];
-            else
                 y = [min(MRSCont.plot.processed.(which_spec).min) max(MRSCont.plot.processed.(which_spec).max)];
             end        
         end        

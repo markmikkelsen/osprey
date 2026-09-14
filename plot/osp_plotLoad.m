@@ -260,7 +260,12 @@ end
 if MRSCont.flags.isGUI
     out = figure( 'Visible', 'off' );
 else
-    out = figure;
+    if MRSCont.opts.showFigs % MM (250411)
+        vis = 'on';
+    else
+        vis = 'off';
+    end
+    out = figure('Visible',vis);
 end
 % Divide the figure into tiles depending on the number of subspec
 % Add the data and plot
