@@ -3,14 +3,14 @@
 %
 % USAGE:
 % allMets = listValidBasisFunctionNames
-% 
+%
 % DESCRIPTION:
 % This function keeps a record of all valid metabolite names.
 % If there is more than one common name for a metabolite, they are grouped
-% inside another cell array. 
+% inside another cell array.
 % The first name inside such a cell array is the default name for that
 % metabolite in Osprey.
-% 
+%
 % OUTPUTS:
 % allMets = Cell array with a list of valid metabolite names.
 %
@@ -21,7 +21,7 @@ function listOfValidNames = listValidBasisFunctionNames(type)
 
 switch type
     case 'mets'
-        
+
         listOfValidNames =  {...
             'AcAc',...  % Acetoacetate
             {'Ace', 'Act'},...   % Acetate
@@ -79,7 +79,7 @@ switch type
             'NAA_Ace',...   % NAA acetyl
             'NAA_Asp',...   % NAA aspartyl
             };
-        
+
     case 'mm'
         listOfValidNames = {...
             'MM09',...

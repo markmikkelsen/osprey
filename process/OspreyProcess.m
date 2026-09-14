@@ -352,6 +352,10 @@ for kk = 1:MRSCont.nDatasets(1) %Subject loop
                 driftPost = driftPre;
             end
 
+%%          %%% 3a. APODIZATION %%% MM (220801)
+
+%             raw = op_filter(raw, 3); % 3-Hz exponential filter
+
 %%          %%% 4. GET REFERENCE DATA / EDDY CURRENT CORRECTION %%%
             % If there are reference scans, load them here to allow eddy-current
             % correction of the raw data.
@@ -471,9 +475,9 @@ for kk = 1:MRSCont.nDatasets(1) %Subject loop
                 end
             end
             if raw.flags.isHERMES || raw.flags.isHERCULES
-                if (strcmp(MRSCont.opts.editTarget{1},'HERCULES1')||strcmp(MRSCont.opts.editTarget{1},'HERCULES2'))
+                % if (strcmp(MRSCont.opts.editTarget{1},'HERCULES1')||strcmp(MRSCont.opts.editTarget{1},'HERCULES2'))
                     MRSCont.opts.editTarget = {'GABA','GSH'};
-                end
+                % end
                 target1 = MRSCont.opts.editTarget{1};
                 target2 = MRSCont.opts.editTarget{2};
                 if length(MRSCont.opts.editTarget) > 2
@@ -780,7 +784,7 @@ close all;
 SubSpecNames = fieldnames(MRSCont.processed);
 NoSubSpec = length(fieldnames(MRSCont.processed));
 for ss = 1 : NoSubSpec
-    for kk = 1 : MRSCont.nDatasets
+    for kk = 1:MRSCont.nDatasets(1)
             temp_sz(1,kk)= MRSCont.processed.(SubSpecNames{ss}){1,kk}.sz(1);
             temp_sz_sw{1,kk} = ['np_sw_' num2str(round(MRSCont.processed.(SubSpecNames{ss}){1,kk}.sz(1))) '_' num2str(round(MRSCont.processed.(SubSpecNames{ss}){1,kk}.spectralwidth))];
     end
@@ -870,7 +874,9 @@ if MRSCont.flags.isGUI
     save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
     MRSCont.flags.isGUI = 1;
 else
-   save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    if MRSCont.opts.saveCont
+        save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    end
 end
 
 end

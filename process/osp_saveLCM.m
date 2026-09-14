@@ -44,28 +44,32 @@ if MRSCont.flags.hasWater && ~exist(fullfile(saveDestination,'w'),'dir')
 end  
 
 % Loop over all datasets
-for kk = 1:MRSCont.nDatasets
+for kk = 1:MRSCont.nDatasets(1)
     
     % Write LCModel .RAW files depending on sequence type
     % Get TE and the input file name
     te                  = MRSCont.processed.metab{kk}.te;
-    [path,filename,~]   = fileparts(MRSCont.files{kk});
+    % [path,filename,~]   = fileparts(MRSCont.files{kk});
+    [~,filename]        = fileparts(MRSCont.files{kk}); % MM (250704)
     
     % For batch analysis, get the last two sub-folders (e.g. site and
     % subject) to augment the filename, avoiding duplicate output filenames
-    path_split          = splitPath(path);
-    if length(path_split) > 2
-        name = [path_split{end-1} '_' path_split{end} '_' filename];
-    end
-    
+    % path_split          = splitPath(path);
+    % if length(path_split) > 2
+    %     name = [path_split{end-1} '_' path_split{end} '_' filename];
+    % end
+    name = filename; % MM (250630)
+
     % Set up complete output filename strings, then write LCM .RAW files.
     if MRSCont.flags.isUnEdited
+
         outfile         = fullfile(saveDestination,'metabs', [name '_LCM_A.RAW']);
         RF              = io_writelcm(MRSCont.processed.metab{kk},outfile,te);
         
         MRSCont.opts.fit.lcmodel.outfileA{kk} = outfile;
         
     elseif MRSCont.flags.isMEGA
+
         outfileA        = fullfile(saveDestination,'metabs', [name '_LCM_A.RAW']);        
         RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},1),outfileA,te);
         outfileB        = fullfile(saveDestination,'metabs', [name '_LCM_B.RAW']);
@@ -81,28 +85,30 @@ for kk = 1:MRSCont.nDatasets
         MRSCont.opts.fit.lcmodel.outfileSum{kk}     = outfileSum;
         
     elseif MRSCont.flags.isHERMES || MRSCont.flags.isHERCULES
-        outfileA        = fullfile(saveDestination,'metabs', [name '_LCM_A.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},1),outfileA,te);
-        outfileB        = fullfile(saveDestination,'metabs', [name '_LCM_B.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},2),outfileB,te);
-        outfileC        = fullfile(saveDestination,'metabs', [name '_LCM_C.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},3),outfileC,te);
-        outfileD        = fullfile(saveDestination,'metabs', [name '_LCM_D.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},4),outfileD,te);
-        outfileDiff1    = fullfile(saveDestination,'metabs', [name '_LCM_DIFF1.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},5),outfileDiff1,te);
-        outfileDiff2    = fullfile(saveDestination,'metabs', [name '_LCM_DIFF2.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},6),outfileDiff2,te);
-        outfileSum      = fullfile(saveDestination,'metabs', [name '_LCM_SUM.RAW']);
-        RF              = io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},7),outfileSum,te);
-        
-        MRSCont.opts.fit.lcmodel.outfileA{kk}       = outfileA;
-        MRSCont.opts.fit.lcmodel.outfileB{kk}       = outfileB;
-        MRSCont.opts.fit.lcmodel.outfileC{kk}       = outfileC;
-        MRSCont.opts.fit.lcmodel.outfileD{kk}       = outfileD;
-        MRSCont.opts.fit.lcmodel.outfileDiff1{kk}   = outfileDiff1;
-        MRSCont.opts.fit.lcmodel.outfileDiff2{kk}   = outfileDiff2;
-        MRSCont.opts.fit.lcmodel.outfileSum{kk}     = outfileSum;
+
+        outfileA     = fullfile(saveDestination,'metabs', [name '_LCM_A.RAW']);
+        outfileB     = fullfile(saveDestination,'metabs', [name '_LCM_B.RAW']);
+        outfileC     = fullfile(saveDestination,'metabs', [name '_LCM_C.RAW']);
+        outfileD     = fullfile(saveDestination,'metabs', [name '_LCM_D.RAW']);
+        outfileDiff1 = fullfile(saveDestination,'metabs', [name '_LCM_DIFF1.RAW']);
+        outfileDiff2 = fullfile(saveDestination,'metabs', [name '_LCM_DIFF2.RAW']);
+        outfileSum   = fullfile(saveDestination, 'metabs', [name '_LCM_SUM.RAW']);
+
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},1), outfileA, te);
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},2), outfileB, te);
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},3), outfileC, te);
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},4), outfileD, te);
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},5), outfileDiff1, te);
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},6), outfileDiff2, te);
+        io_writelcm(op_takesubspec(MRSCont.processed.metab{kk},7), outfileSum, te);
+
+        MRSCont.opts.fit.lcmodel.outfileA{kk}     = outfileA;
+        MRSCont.opts.fit.lcmodel.outfileB{kk}     = outfileB;
+        MRSCont.opts.fit.lcmodel.outfileC{kk}     = outfileC;
+        MRSCont.opts.fit.lcmodel.outfileD{kk}     = outfileD;
+        MRSCont.opts.fit.lcmodel.outfileDiff1{kk} = outfileDiff1;
+        MRSCont.opts.fit.lcmodel.outfileDiff2{kk} = outfileDiff2;
+        MRSCont.opts.fit.lcmodel.outfileSum{kk}   = outfileSum;
         
     else
         error('No flag set for sequence type!');
@@ -113,21 +119,24 @@ for kk = 1:MRSCont.nDatasets
     if MRSCont.flags.hasRef
         % Get TE and the input file name. For GE, the water reference is
         % already contained in the P file.
-        if strcmpi(MRSCont.vendor, 'GE') || strcmp(MRSCont.datatype,'DATA')
+        if strcmpi(MRSCont.vendor, 'GE') || strcmp(MRSCont.datatype, 'DATA')
             te_ref                      = MRSCont.processed.metab{kk}.te;
-            [path_ref,filename_ref,~]   = fileparts(MRSCont.files{kk});
+            % [path_ref,filename_ref,~]   = fileparts(MRSCont.files{kk});
+            [~,filename_ref]            = fileparts(MRSCont.files{kk}); % MM (250704)
         else
             te_ref                      = MRSCont.processed.ref{kk}.te;
-            [path_ref,filename_ref,~]   = fileparts(MRSCont.files_ref{kk});
+            % [path_ref,filename_ref,~]   = fileparts(MRSCont.files_ref{kk});
+            [~,filename_ref]            = fileparts(MRSCont.files_ref{kk});
         end
         
         % For batch analysis, get the last two sub-folders (e.g. site and
         % subject) to augment the filename, avoiding duplicate output filenames
-        path_ref_split          = splitPath(path_ref);
-        if length(path_ref_split) > 2
-            name_ref = [path_ref_split{end-1} '_' path_ref_split{end} '_' filename_ref];
-        end
-        
+        % path_ref_split          = splitPath(path_ref);
+        % if length(path_ref_split) > 2
+        %     name_ref = [path_ref_split{end-1} '_' path_ref_split{end} '_' filename_ref];
+        % end
+        name_ref = filename_ref; % MM (250704)
+
         % Set up complete output filename strings, then write LCM .RAW files.
         outfileRef      = fullfile(saveDestination,'ref', [name_ref '_LCM_REF.RAW']);
         RF              = io_writelcm(MRSCont.processed.ref{kk},outfileRef,te_ref);

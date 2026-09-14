@@ -1,13 +1,15 @@
-function MRSCont = osp_writelcm_control(MRSCont, kk, which, LCMparam)
-%% [MRSCont] = osp_writelcm_control(MRSCont, kk, which, LCMparam)
+function MRSCont = osp_writelcm_control(MRSCont, LCMparam, kk, which)
+% [MRSCont] = osp_writelcm_control(MRSCont, LCMparam, kk, which)
 %   This function creates a LCModel compatible .control file which can be used
 %   for LCModel batch processing. 
 %
 %   USAGE:
-%       RF = osp_writelcm_control(MRSCont, kk, rr, which, LCMparam);
+%       RF = osp_writelcm_control(MRSCont, LCMparam, kk, which);
 %
 %   INPUTS:
 %       MRSCont     = Osprey MRS data container.
+%       LCMparam    = struct with the control file parameters this struct created
+%                     by the LCMcontrol.m script included in the Osprey process folder
 %       kk          = Index for the kk-th dataset (optional. Default = 1)
 %       which       = String for the spectrum to plot (optional)
 %                   OPTIONS:    'A' (default)
@@ -17,8 +19,6 @@ function MRSCont = osp_writelcm_control(MRSCont, kk, which, LCMparam)
 %                               'diff1'
 %                               'diff2'
 %                               'sum'
-%      LCMparam     = struct with the control file parameters this struct created
-%                     by the LCMcontrol.m script included in the Osprey process folder
 %                       
 %
 %   OUTPUTS:
@@ -35,20 +35,20 @@ function MRSCont = osp_writelcm_control(MRSCont, kk, which, LCMparam)
 %       Simpson et al., Magn Reson Med 77:23-33 (2017)
 
 
+if nargin == 0
+    error('ERROR: no input Osprey container specified.  Aborting!!');
+end
+
 % Fall back to defaults if not provided
 if nargin < 4
-    error('ERROR: no input LCModel control struct specified.  Aborting!!');
+    which = 'A';
     if nargin < 3
-        which = 'A';
+        kk = 1;
         if nargin < 2
-            kk = 1;
-            if nargin < 1
-                error('ERROR: no input Osprey container specified.  Aborting!!');
-            end
+            error('ERROR: no input LCModel control struct specified.  Aborting!!');
         end
     end
 end
-RF = LCMparam;
 
 % Set up saving location
 saveDestination = fullfile(MRSCont.outputFolder, 'LCModelControlFiles');
@@ -69,7 +69,7 @@ end
 name_raw = MRSCont.opts.fit.lcmodel.(subspec){kk};
 
 % Retrieve data
-dataToExport = op_takesubspec(MRSCont.processed.metab{kk},find(strcmp(MRSCont.processed.metab{kk}.names,which)));
+dataToExport = op_takesubspec(MRSCont.processed.metab{kk}, find(strcmp(MRSCont.processed.metab{kk}.names, which)));
 
 % Retrieve the filenames of the LCModel .RAW files that were created at the
 % end of OspreyProcess using osp_saveLCM.
@@ -164,7 +164,7 @@ end
 function outputFilename = makeUniqueFileName(inputFilename)
     % For batch analysis, get the last two sub-folders (e.g. site and
     % subject) to augment the filename, avoiding duplicate output filenames
-    [path,filename,ext]   = fileparts(inputFilename);
+    [path,filename,ext] = fileparts(inputFilename);
     path_split          = regexp(path,filesep,'split');
     
     if length(path_split) > 2

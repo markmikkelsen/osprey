@@ -25,18 +25,18 @@ end
 
 % Read the fit results from the .table files
 if isfile([MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.table'])
-    tab                 = mrs_readLcmodelTABLE([MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.table']);
+    tab = mrs_readLcmodelTABLE([MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.table']);
 else
     error('ERROR! Cannot find LCModel output table file %s. \nVery likely, LCModel has not been executed correctly.\n', [MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.table'])
 end
-fitParams.name      = tab.name;
-fitParams.CRLB      = tab.SDpct;
-fitParams.relConc   = tab.relative_conc;
-fitParams.ph0       = tab.ph0;
-fitParams.ph1       = tab.ph1;
-fitParams.refShift  = tab.refShift;
-fitParams.refFWHM   = tab.fwhm;
-fitParams.SNR       = tab.snr;
+fitParams.name     = tab.name;
+fitParams.CRLB     = tab.SDpct;
+fitParams.relConc  = tab.relative_conc;
+fitParams.ph0      = tab.ph0;
+fitParams.ph1      = tab.ph1;
+fitParams.refShift = tab.refShift;
+fitParams.refFWHM  = tab.fwhm;
+fitParams.SNR      = tab.snr;
 
 %Remove the - in -CrCH2 because it interferes with the downstream functions
 idx = find(strcmp(fitParams.name,'-CrCH2'));
@@ -46,22 +46,22 @@ end
 %Remove the + in combinations because it interferes with the downstream functions
 idx = find(contains(fitParams.name,'+'));
 if ~isempty(idx)
-    for combs = 1 : length(idx)
+    for combs = 1:length(idx)
         fitParams.name{idx(combs)} = strrep(fitParams.name{idx(combs)},'+','_');
     end
 end
 
 % Read the spectrum, fit, and baseline from the .coord files
-[ spectra, spectra_metabolites, x_ppm, info ] = mrs_readLcmodelCOORD( [MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.coord'] );
-fitParams.ppm           = x_ppm;
-fitParams.data          = spectra(:,1);
-fitParams.completeFit   = spectra(:,2);
+[spectra, spectra_metabolites, x_ppm, info] = mrs_readLcmodelCOORD([MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.coord']);
+fitParams.ppm          = x_ppm;
+fitParams.data         = spectra(:,1);
+fitParams.completeFit  = spectra(:,2);
 if size(spectra,2) == 3
-    fitParams.baseline      = spectra(:,3);
+    fitParams.baseline = spectra(:,3);
 else
-    fitParams.baseline      =zeros(size(spectra,1),1);
+    fitParams.baseline = zeros(size(spectra,1),1);
 end
-fitParams.residual      = fitParams.data - fitParams.completeFit;
+fitParams.residual     = fitParams.data - fitParams.completeFit;
 
 % Add Nan values for nicer plots
 if ~isempty(MRSCont.opts.fit.GAP.(which))
@@ -83,7 +83,7 @@ end
 % The .coord files also contain the individual metabolite fits, BUT only if
 % the estimate is not zero, and the individual metabolite fits include the
 % baseline.
-fitParams.indivMets     = zeros(info.n, length(fitParams.name));
+fitParams.indivMets = zeros(info.n, length(fitParams.name));
 for rr = 1:length(fitParams.name)
     % Check whether a particular metabolite has been fit
     idxMatch = find(strcmp(info.metabolites, fitParams.name{rr}));
@@ -99,14 +99,12 @@ for rr = 1:length(fitParams.name)
     end
 end
 % Store amplitudes regardless whether the are fit or not
-fitParams.ampl        = tab.concentration';
+fitParams.ampl = tab.concentration';
 
 % Read the raw area of the unsuppressed water peak from the .print file
-infoPrint = mrs_readLcmodelPRINT( [MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.print'] );
+infoPrint = mrs_readLcmodelPRINT([MRSCont.opts.fit.lcmodel.(lcmOutputFile){kk} '.print']);
 if isfield(infoPrint,'h2oarea')
     fitParams.h2oarea = infoPrint.h2oarea;
 end
-
-
 
 end

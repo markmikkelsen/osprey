@@ -511,12 +511,11 @@ end
 if ~isfield(MRSCont.opts, 'SubSpecAlignment')
     MRSCont.opts.SubSpecAlignment.mets = 'L2Norm';
     MRSCont.opts.SubSpecAlignment.mm = 'none';
-else if ~isfield(MRSCont.opts.SubSpecAlignment, 'mets')
+elseif ~isfield(MRSCont.opts.SubSpecAlignment, 'mets')
     SubSpecAlignment = MRSCont.opts.SubSpecAlignment;
     MRSCont.opts = rmfield(MRSCont.opts,'SubSpecAlignment');
     MRSCont.opts.SubSpecAlignment.mets = SubSpecAlignment;
-    MRSCont.opts.SubSpecAlignment.mm = 'none'; 
-    end
+    MRSCont.opts.SubSpecAlignment.mm = 'none';
 end
 
 if ~isfield(MRSCont.opts,'exportParams')
@@ -579,7 +578,8 @@ switch seqType
             MRSCont.opts.fit.GAP.ref = [];
             MRSCont.opts.fit.GAP.ref_mm = [];
             MRSCont.opts.fit.GAP.w = [];
-        else if ~isfield(MRSCont.opts.fit.GAP, 'A')
+        else
+            if ~isfield(MRSCont.opts.fit.GAP, 'A')
                 MRSCont.opts.fit.GAP.A = [];
             end
             if ~isfield(MRSCont.opts.fit.GAP, 'diff1')
@@ -613,7 +613,8 @@ switch seqType
             MRSCont.opts.fit.GAP.diff1 = [];
             MRSCont.opts.fit.GAP.diff2 = [];
             MRSCont.opts.fit.GAP.diff3 = [];
-        else if ~isfield(MRSCont.opts.fit.GAP, 'sum')
+        else
+            if ~isfield(MRSCont.opts.fit.GAP, 'sum')
                 MRSCont.opts.fit.GAP.sum = [];
             end
             if ~isfield(MRSCont.opts.fit.GAP, 'diff1')
