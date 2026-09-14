@@ -89,7 +89,12 @@ canvasSize(4)   = screenSize(4) * 0.7;
 canvasSize(3)   = canvasSize(4) * (11/8.5);
 canvasSize(2)   = (screenSize(4) - canvasSize(4))/2;
 canvasSize(1)   = (screenSize(3) - canvasSize(3))/2;
-out = figure('NumberTitle', 'off', 'Visible', 'on', 'Menu', 'none', ...
+if MRSCont.opts.showFigs % MM (250411)
+    vis = 'on';
+else
+    vis = 'off';
+end
+out = figure('NumberTitle', 'off', 'Visible', vis, 'Menu', 'none', ...
              'Position', canvasSize, 'ToolBar', 'none', ...
              'HandleVisibility', 'off', 'Renderer', 'painters', ...
              'Color', colormapfig.Background, 'Tag','MainFigure');
