@@ -54,10 +54,10 @@ diary(fullfile(outputFolder, 'LogFile.txt'));
 MRSCont.flags.reordered = reordered;
 % Parse ECC flag entry
 if ~MRSCont.flags.isSERIES
-    if length(MRSCont.opts.ECC.raw) == 1
+    if isscalar(MRSCont.opts.ECC.raw)
         MRSCont.opts.ECC.raw = ones(size(MRSCont.files)) * MRSCont.opts.ECC.raw;
     end
-    if length(MRSCont.opts.ECC.mm) == 1 && ~isempty(MRSCont.files_mm)
+    if isscalar(MRSCont.opts.ECC.mm) && ~isempty(MRSCont.files_mm)
         MRSCont.opts.ECC.mm = ones(size(MRSCont.files_mm)) * MRSCont.opts.ECC.mm;
     end
 end
@@ -450,7 +450,9 @@ if  MRSCont.flags.isGUI
     save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
     MRSCont.flags.isGUI = 1;
 else
-   save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    if MRSCont.opts.saveCont
+        save(fullfile(outputFolder, outputFile), 'MRSCont','-v7.3');
+    end
 end
 
 end

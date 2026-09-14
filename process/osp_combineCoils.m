@@ -51,14 +51,14 @@ if nargin<5
                 ref_ll = MRSCont.opts.MultipleSpectra.metab(ll);
                 if isSpecial
                     % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                    cweights          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_ref_uncomb{ref_ll,kk}, 'diff'), 1, 'h');
+                    cweights          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_ref_uncomb{ref_ll,kk}, 'diff'), 1, 'gls');
                 else
-                    cweights          = op_getcoilcombos(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'h');
+                    cweights          = op_getcoilcombos(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'gls');
                 end
                 cweights.ref        = 'raw_ref';
 
-                raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'h',cweights);
-                raw_ref_comb        = op_addrcvrs(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'h',cweights);
+                raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'gls',cweights);
+                raw_ref_comb        = op_addrcvrs(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'gls',cweights);
                 
                 if MRSCont.flags.isUnEdited
                     raw_comb.flags.isUnEdited = 1;
@@ -86,12 +86,12 @@ if nargin<5
                     w_ll = MRSCont.opts.MultipleSpectra.w(ll);
                     if isSpecial
                         % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                        cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'h');
+                        cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'gls');
                     else
-                        cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'h');
+                        cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'gls');
                     end
                     cweights_w.ref      = 'raw_w';
-                    raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'h',cweights_w);
+                    raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'gls',cweights_w);
                     raw_w_comb.flags.isUnEdited = 1;
                     MRSCont.raw_w{w_ll,kk}   = raw_w_comb;
                     MRSCont.raw_w{w_ll,kk} = op_combine_water_subspecs(MRSCont.raw_w{w_ll,kk},0);
@@ -100,12 +100,12 @@ if nargin<5
                     w_ll = MRSCont.opts.MultipleSpectra.w(ll);
                         if isSpecial
                             % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                            cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'h');
+                            cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'gls');
                         else
-                            cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'h');
+                            cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'gls');
                         end
                         cweights_w.ref      = 'raw_w';
-                        raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'h',cweights_w);
+                        raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'gls',cweights_w);
                         if MRSCont.flags.isUnEdited
                             raw_comb.flags.isUnEdited = 1;
                         elseif MRSCont.flags.isMEGA
@@ -119,7 +119,7 @@ if nargin<5
                         end
                         MRSCont.raw{metab_ll,kk}     = raw_comb;
                         raw_w_comb.flags.isUnEdited = 1;
-                        raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'h',cweights_w);
+                        raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'gls',cweights_w);
                         raw_w_comb.flags.isUnEdited = 1;
                         MRSCont.raw_w{w_ll,kk}   = raw_w_comb;
                         MRSCont.raw_w{w_ll,kk} = op_combine_water_subspecs(MRSCont.raw_w{w_ll,kk},0);
@@ -131,10 +131,10 @@ if nargin<5
                         % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
                         cweights          = op_getcoilcombos_specReg(op_combinesubspecs(op_averaging(MRSCont.raw_uncomb{metab_ll,kk}), 'diff'), 0, 0.01, 2);
                     else
-                        cweights          = op_getcoilcombos(MRSCont.raw_uncomb{metab_ll,kk}, 1, 'h');
+                        cweights          = op_getcoilcombos(MRSCont.raw_uncomb{metab_ll,kk}, 1, 'gls');
                     end
                     cweights.ref        = 'raw';
-                    raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'h',cweights);
+                    raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'gls',cweights);
                     if MRSCont.flags.isUnEdited
                         raw_comb.flags.isUnEdited = 1;
                     elseif MRSCont.flags.isMEGA
@@ -167,13 +167,13 @@ else
         try
             if isSpecial
                 % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                cweights          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_ref_uncomb{ref_ll,kk}, 'diff'), 1, 'h');
+                cweights          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_ref_uncomb{ref_ll,kk}, 'diff'), 1, 'gls');
             else
-                cweights          = op_getcoilcombos(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'h');
+                cweights          = op_getcoilcombos(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'gls');
             end
             cweights.ref        = 'raw_ref';
-            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'h',cweights);
-            raw_ref_comb        = op_addrcvrs(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'h',cweights);
+            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'gls',cweights);
+            raw_ref_comb        = op_addrcvrs(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'gls',cweights);
             if MRSCont.flags.isUnEdited
                 raw_comb.flags.isUnEdited = 1;
                 raw_ref_comb.flags.isUnEdited = 1;
@@ -204,12 +204,12 @@ else
             if MRSCont.flags.hasWater % Now do the same for the (short-TE) water signal
                 if isSpecial
                     % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                    cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'h');
+                    cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'gls');
                 else
-                    cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'h');
+                    cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'gls');
                 end
                 cweights_w.ref      = 'raw_w';
-                raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'h',cweights_w);        
+                raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'gls',cweights_w);        
                 raw_w_comb.flags.isUnEdited = 1;
                 MRSCont.raw_w{w_ll,kk}   = raw_w_comb;
                 MRSCont.raw_w{ll,kk} = op_combine_water_subspecs(MRSCont.raw_w{ll,kk},0);
@@ -221,13 +221,13 @@ else
                 % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
                 cweights          = op_getcoilcombos_specReg(op_combinesubspecs(op_averaging(MRSCont.raw_uncomb{metab_ll,kk}), 'diff'), 0, 0.01, 2);
             else
-                cweights          = op_getcoilcombos(MRSCont.raw_uncomb{metab_ll,kk}, 1, 'h');
+                cweights          = op_getcoilcombos(MRSCont.raw_uncomb{metab_ll,kk}, 1, 'gls');
             end
             cweights.ref        = 'raw';
-            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'h',cweights);
-            cweights            = op_getcoilcombos(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'h');
+            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'gls',cweights);
+            cweights            = op_getcoilcombos(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'gls');
             cweights.ref        = 'raw_ref';
-            raw_ref_comb        = op_addrcvrs(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'h',cweights);
+            raw_ref_comb        = op_addrcvrs(MRSCont.raw_ref_uncomb{ref_ll,kk},1,'gls',cweights);
             if MRSCont.flags.isUnEdited
                 raw_comb.flags.isUnEdited = 1;
                 raw_ref_comb.flags.isUnEdited = 1;
@@ -258,12 +258,12 @@ else
             if MRSCont.flags.hasWater % Now do the same for the (short-TE) water signal
                 if isSpecial
                     % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                    cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'h');
+                    cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'gls');
                 else
-                    cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'h');
+                    cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'gls');
                 end
                 cweights_w.ref      = 'raw_w';
-                raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'h',cweights_w);        
+                raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'gls',cweights_w);        
                 raw_w_comb.flags.isUnEdited = 1;
                 MRSCont.raw_w{w_ll,kk}   = raw_w_comb;
                 MRSCont.raw_w{ll,kk} = op_combine_water_subspecs(MRSCont.raw_w{ll,kk},0);
@@ -273,14 +273,13 @@ else
     else if MRSCont.flags.hasWater % Now do the same for the (short-TE) water signal
             if isSpecial
                 % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
-                cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'h');
+                cweights_w          = op_getcoilcombos(op_combinesubspecs(MRSCont.raw_w_uncomb{w_ll,kk}, 'diff'), 1, 'gls');
             else
-                cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'h');
+                cweights_w          = op_getcoilcombos(MRSCont.raw_w_uncomb{w_ll,kk}, 1, 'gls');
             end
             cweights_w.ref      = 'raw_w';
-            raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'h',cweights_w);
-            
-            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{w_ll,kk},1,'h',cweights_w);
+            raw_w_comb          = op_addrcvrs(MRSCont.raw_w_uncomb{w_ll,kk},1,'gls',cweights_w);
+            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{w_ll,kk},1,'gls',cweights_w);
             if MRSCont.flags.isUnEdited
                 raw_comb.flags.isUnEdited = 1;
             elseif MRSCont.flags.isMEGA
@@ -303,10 +302,10 @@ else
                 % Workflow adopted from https://github.com/CIC-methods/FID-A/blob/master/exampleRunScripts/run_specialproc_auto.m
                 cweights          = op_getcoilcombos_specReg(op_combinesubspecs(op_averaging(MRSCont.raw_uncomb{metab_ll,kk}), 'diff'), 0, 0.01, 2);
             else
-                cweights          = op_getcoilcombos(MRSCont.raw_uncomb{metab_ll,kk}, 1, 'h');
+                cweights          = op_getcoilcombos(MRSCont.raw_uncomb{metab_ll,kk}, 1, 'gls');
             end
             cweights.ref      = 'raw';
-            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'h',cweights);
+            raw_comb            = op_addrcvrs(MRSCont.raw_uncomb{metab_ll,kk},1,'gls',cweights);
             if MRSCont.flags.isUnEdited
                 raw_comb.flags.isUnEdited = 1;
             elseif MRSCont.flags.isMEGA

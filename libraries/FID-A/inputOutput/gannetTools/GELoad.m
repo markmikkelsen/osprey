@@ -279,6 +279,15 @@ hdr.version = rdbm_rev_num;
 % nucleus is stored, insert here):
 hdr.nucleus = '1H';
 
+% Determine psd
+out = GetSVHeader(fname);
+hdr.seq = out.header.image.psdname;
+if any(strcmpi(hdr.seq, {'slaser','oslaser'}))
+    hdr.seq = 'slaser';
+elseif any(strcmpi(hdr.seq, {'jpress','gaba'}))
+    hdr.seq = 'press';
+end
+
 % Spectro prescan pfiles
 if npoints == 1 && nrows == 1
     npoints = 2048;
@@ -324,7 +333,7 @@ if (nechoes == 1)
     if bitand(hdr.cv24,16)
         mult = 1/2;
     end
-
+    
     WaterData = ShapeData(:,:,2:refframes+1,:) * mult;
     FullData = ShapeData(:,:,refframes+2:end,:) * mult;
     
