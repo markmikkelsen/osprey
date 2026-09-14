@@ -177,7 +177,7 @@ switch num2str(rdbm_rev_num)
         trhc         = 184;
         brhc         = 187;
         
-    case {'26.002','27','27.001','28.002','28.003','30'}
+    case {'26.002','27','27.001','28.002','28.003','30','30.1','31'}
         
         % int
         rdb_hdr_off_image   = 11;
@@ -280,13 +280,14 @@ hdr.version = rdbm_rev_num;
 hdr.nucleus = '1H';
 
 % Determine psd
-out = GetSVHeader(fname);
-hdr.seq = out.header.image.psdname;
-if any(strcmpi(hdr.seq, {'slaser','oslaser'}))
+% out = GetSVHeader(fname);
+% hdr.seq = out.header.image.psdname;
+% hdr.seq = t_hdr_value(rhi_hdr_psdname);
+% if any(strcmpi(hdr.seq, {'slaser','oslaser'}))
     hdr.seq = 'slaser';
-elseif any(strcmpi(hdr.seq, {'jpress','gaba'}))
-    hdr.seq = 'press';
-end
+% elseif any(strcmpi(hdr.seq, {'jpress','gaba'}))
+    % hdr.seq = 'press';
+% end
 
 % Spectro prescan pfiles
 if npoints == 1 && nrows == 1
@@ -368,7 +369,11 @@ else
     [X1,X2] = ndgrid(1:refframes, 1:nechoes);
     X1 = X1'; X1 = X1(:);
     X2 = X2'; X2 = X2(:);
-    Y1 = (-1).^(noadd * (X1-1));
+    if hdr.cv24 >= 16384 % Do not apply any phase cycling correction when the receiver phase toggle in sLASER has been set
+        Y1 = ones(size(X1,1),1);
+    else
+        Y1 = (-1).^(MRS_struct.p.GE.noadd(ii) * (X1-1));
+    end
     Y1 = permute(repmat(Y1, [1 npoints 2 nreceivers]), [3 2 1 4]);
     Y2 = 1 + (totalframes/nechoes) * (X2-1) + X1;
     WaterData = Y1 .* ShapeData(:,:,Y2,:) * multw;
@@ -376,7 +381,11 @@ else
     [X1,X2] = ndgrid(1:dataframes, 1:nechoes);
     X1 = X1'; X1 = X1(:);
     X2 = X2'; X2 = X2(:);
-    Y1 = (-1).^(noadd * (X1-1));
+    if hdr.cv24 >= 16384 % Do not apply any phase cycling correction when the receiver phase toggle in sLASER has been set
+        Y1 = ones(size(X1,1),1);
+    else
+        Y1 = (-1).^(MRS_struct.p.GE.noadd(ii) * (X1-1));
+    end
     Y1 = permute(repmat(Y1, [1 npoints 2 nreceivers]), [3 2 1 4]);
     Y2 = 1 + refframes + (totalframes/nechoes) * (X2-1) + X1;
     FullData = Y1 .* ShapeData(:,:,Y2,:) * mult;

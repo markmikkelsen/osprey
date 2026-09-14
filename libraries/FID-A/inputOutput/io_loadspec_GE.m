@@ -50,16 +50,6 @@ end
 
 data_ref=GEout_ref;
 
-if subspecs>1 && strcmpi(GEhdr.seq,'slaser')
-    data(:,:,2:2:end,:)=-data(:,:,2:2:end,:);
-    data_ref(:,2:2:end,:)=-data_ref(:,2:2:end,:);
-end
-
-if subspecs==1
-    data(:,2:2:end,:)=-data(:,2:2:end,:);
-    data_ref(:,2:2:end,:)=-data_ref(:,2:2:end,:);
-end
-
 fids=squeeze(data);
 fids_ref=squeeze(data_ref);
 
@@ -100,6 +90,11 @@ dims_ref.extras=0;
 specs=fftshift(fft(fids,[],dims.t),dims.t);
 specs_w=fftshift(fft(fids_ref,[],dims_ref.t),dims_ref.t);
 
+%Add some prephasing for unedited data (not fully tested) (MM: 260914)
+if subspecs==1
+    specs(:,:,1:2:end)=-specs(:,:,1:2:end);
+    specs_w(:,:,1:2:end)=-specs_w(:,:,1:2:end);
+end
 
 %Now get relevant scan parameters:*****************************
 
