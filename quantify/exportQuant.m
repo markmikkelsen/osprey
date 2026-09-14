@@ -10,11 +10,11 @@ for ss = 1:size(MRSCont.quantify.names.metab,2)
     for q = 1:length(quants)
         if isfield(MRSCont.quantify.tables.metab, quants(q))
             for mm = 1:size(MRSCont.quantify.names.metab,1)
-                if ~isempty(MRSCont.quantify.names.metab{mm,ss})  
+                if ~isempty(MRSCont.quantify.names.metab{mm,ss}) && istable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss})
                     if ~MRSCont.flags.isPRIAM
                         MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss} = PopulateJSON(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss},quants{q});
                         osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss}, [saveDestination filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_1_Basis_' num2str(mm)]);
-                    else                    
+                    else
                         MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss} = PopulateJSON(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss},quants{q});
                         osp_WriteBIDsTable(MRSCont.quantify.tables.metab.(quants{q}).Voxel_1{mm,ss}, [saveDestination filesep MRSCont.quantify.names.SubSpectra{mm,ss} '_' quants{q} '_Voxel_1_Basis_' num2str(mm)]);
                         MRSCont.quantify.tables.metab.(quants{q}).Voxel_2{mm,ss} = PopulateJSON(MRSCont.quantify.tables.metab.(quants{q}).Voxel_2{mm,ss},quants{q});

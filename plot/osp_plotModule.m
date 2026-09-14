@@ -622,7 +622,11 @@ switch Module
                             NameText = [NameText, [basisSetNames{m} ' \n']];
                             RawAmplText = [RawAmplText, [num2str(RawAmpl(m),'%1.2e') '\n']];
                             if strcmp(MRSCont.opts.fit.method, 'LCModel')
-                                CRLBText = [CRLBText, [num2str(CRLB(m), '%i') '%%\n']];
+                                try
+                                    CRLBText = [CRLBText, [num2str(CRLB(m), '%i') '%%\n']];
+                                catch
+                                    % do nothing
+                                end
                             end
                         end
                         set(Results, 'Title', 'Raw Water Ratio');

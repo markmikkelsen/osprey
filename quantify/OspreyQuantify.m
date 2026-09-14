@@ -167,13 +167,13 @@ if strcmp(MRSCont.opts.fit.method, 'LCModel')
         for kk = 1:MRSCont.nDatasets(1)
             if ~iscell(MRSCont.fit.results) %Is SVS
                 MRSCont.quantify.CRLB{1,kk,ss}.metab = MRSCont.fit.results.metab.fitParams{1,kk,ss}.CRLB';
-                if qtfyH2O
+                if qtfyH2O && isfield(MRSCont.fit.results.metab.fitParams{1,kk,ss}, 'h2oarea')
                     MRSCont.quantify.h2oarea{1,kk,ss}.metab = MRSCont.fit.results.metab.fitParams{1,kk,ss}.h2oarea;
                 end
             else %Is DualVoxel
                 MRSCont.quantify.CRLB{kk}.metab(:,1) = MRSCont.fit.results{1}.metab.fitParams{1,kk,ss}.CRLB';
                 MRSCont.quantify.CRLB{kk}.metab(:,2) = MRSCont.fit.results{2}.metab.fitParams{1,kk,ss}.CRLB';
-                if qtfyH2O
+                if qtfyH2O && isfield(MRSCont.fit.results{1}.metab.fitParams{1,kk,ss}, 'h2oarea') && isfield(MRSCont.fit.results{2}.metab.fitParams{1,kk,ss}, 'h2oarea')
                     MRSCont.quantify.h2oarea{kk}.metab(:,1) = MRSCont.fit.results{1}.metab.fitParams{1,kk,ss}.h2oarea;
                     MRSCont.quantify.h2oarea{kk}.metab(:,2) = MRSCont.fit.results{2}.metab.fitParams{1,kk,ss}.h2oarea;
                 end
