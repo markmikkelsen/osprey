@@ -42,6 +42,11 @@ if nargin < 3
     end
 end
 
+%%% 0. PRINT OSPREY MOD VERSION
+fprintf('\n');
+fprintf('Osprey - Mikkelsen version (260914)\n'); % MM (260914)
+fprintf('\n');
+
 %%% 1. INITIALISE DATA CONTAINER WITH DEFAULT SETTINGS
 [MRSCont] = OspreySettings;
 VersionStruct  = getCurrentVersion;
