@@ -212,6 +212,20 @@ opts.fit.FWHMcoMM3          = 14;
 % empty, Osprey will try to use one of the pre-compiled binaries it is
 % shipped with.
 % opts.fit.customLCModelBinary = '';
+
+% Fix the referencing (frequency) shift instead of letting LCModel search
+% for it automatically (LCModel manual Sec 11.3.3/11.3.4). Optionally
+% specify the fixed shift with opts.fit.ppmShift (in ppm); if left
+% empty/unset, the shift from the initial cross-correlation function will
+% be used instead.
+% opts.fit.fixShift           = 1;               % OPTIONS:    - 0 (no, default)
+%                                                 %             - 1 (yes)
+% opts.fit.ppmShift           = 0;                % [ppm] fixed shift (optional, requires fixShift = 1)
+
+% Control which cross-correlation function(s) LCModel uses for automated
+% referencing (LCModel manual Sec 11.3.5): element 1 = water peak,
+% element 2 = usual metabolite landmarks (NAA, Cr, Cho).
+% opts.fit.doRefs             = [0 1];            % Default (LCModel): [0 1] (water off, landmarks on)
 %%% ----- END LCMODEL FITTING OPTIONS -----
 
 

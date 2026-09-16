@@ -563,6 +563,32 @@ switch MRSCont.opts.fit.method
                     LCMparam = osp_editControlParameters(LCMparam, 'doecc', 'F');
                 end
 
+                % Optionally fix the referencing (frequency) shift instead
+                % of leaving it to LCModel's automatic search (LCModel
+                % manual Sec 11.3.3/11.3.4)
+                if isfield(MRSCont.opts.fit, 'fixShift') && MRSCont.opts.fit.fixShift
+                    LCMparam = osp_editControlParameters(LCMparam, 'fixshf', 'T');
+                    if isfield(MRSCont.opts.fit, 'ppmShift') && ~isempty(MRSCont.opts.fit.ppmShift)
+                        LCMparam = osp_editControlParameters(LCMparam, 'ppmshf', sprintf('%4.2f', MRSCont.opts.fit.ppmShift));
+                    end
+                end
+
+                % Optionally control which CCF(s) are used for automated
+                % referencing (LCModel manual Sec 11.3.5): DOREFS(1) for
+                % the water peak, DOREFS(2) for the usual metabolite
+                % landmarks (NAA, Cr, Cho)
+                if isfield(MRSCont.opts.fit, 'doRefs') && ~isempty(MRSCont.opts.fit.doRefs)
+                    doRefsStr = cell(1, length(MRSCont.opts.fit.doRefs));
+                    for dd = 1:length(MRSCont.opts.fit.doRefs)
+                        if MRSCont.opts.fit.doRefs(dd)
+                            doRefsStr{dd} = 'T';
+                        else
+                            doRefsStr{dd} = 'F';
+                        end
+                    end
+                    LCMparam = osp_editControlParameters(LCMparam, 'dorefs', doRefsStr);
+                end
+
                 % Now loop over all datasets
                 for kk = 1:MRSCont.nDatasets(1)
 
@@ -735,6 +761,32 @@ switch MRSCont.opts.fit.method
                         LCMparam = osp_editControlParameters(LCMparam, 'wconc', '1.0'); % MM: orig: 55556 38857
                         LCMparam = osp_editControlParameters(LCMparam, 'doecc', 'F');
                         LCMparam = osp_editControlParameters(LCMparam, 'ppmh2o', '4.68'); % MM (250702)
+                    end
+
+                    % Optionally fix the referencing (frequency) shift
+                    % instead of leaving it to LCModel's automatic search
+                    % (LCModel manual Sec 11.3.3/11.3.4)
+                    if isfield(MRSCont.opts.fit, 'fixShift') && MRSCont.opts.fit.fixShift
+                        LCMparam = osp_editControlParameters(LCMparam, 'fixshf', 'T');
+                        if isfield(MRSCont.opts.fit, 'ppmShift') && ~isempty(MRSCont.opts.fit.ppmShift)
+                            LCMparam = osp_editControlParameters(LCMparam, 'ppmshf', sprintf('%4.2f', MRSCont.opts.fit.ppmShift));
+                        end
+                    end
+
+                    % Optionally control which CCF(s) are used for
+                    % automated referencing (LCModel manual Sec 11.3.5):
+                    % DOREFS(1) for the water peak, DOREFS(2) for the usual
+                    % metabolite landmarks (NAA, Cr, Cho)
+                    if isfield(MRSCont.opts.fit, 'doRefs') && ~isempty(MRSCont.opts.fit.doRefs)
+                        doRefsStr = cell(1, length(MRSCont.opts.fit.doRefs));
+                        for dd = 1:length(MRSCont.opts.fit.doRefs)
+                            if MRSCont.opts.fit.doRefs(dd)
+                                doRefsStr{dd} = 'T';
+                            else
+                                doRefsStr{dd} = 'F';
+                            end
+                        end
+                        LCMparam = osp_editControlParameters(LCMparam, 'dorefs', doRefsStr);
                     end
 
                     % Gap in ppm axis
