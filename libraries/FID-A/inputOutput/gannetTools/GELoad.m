@@ -8,8 +8,11 @@
 % as part of the Gannet software package by Richard Edden (gabamrs.com).
 % Developed by Ralph Noeske and Mark Mikkelsen.
 %
+% Changelog:
+%   260916: Used Claude Sonnet 5 to extract psd/protocol names.
+%
 % INPUTS:
-% filename   = filename of GE P file to be loaded.
+% filename   = filename of GE P-file to be loaded.
 
 function [FullData,WaterData,hdr]=GELoad(fname)
 
@@ -91,7 +94,11 @@ switch num2str(rdbm_rev_num)
         % int
         image_te = 181;
         image_tr = 179;
-        
+
+        % char (byte offset from the start of the image header block;
+        % see spec2nii's GE/ge_hdr_fields.py for the source layout)
+        rhi_hdr_psdname = 1272; % 33 bytes
+
         % float
         image_user8  = 38;
         image_user11 = 41;
@@ -102,7 +109,7 @@ switch num2str(rdbm_rev_num)
         tlhc         = 121;
         trhc         = 124;
         brhc         = 127;
-        
+
     case '16'
         
         % int
@@ -128,7 +135,11 @@ switch num2str(rdbm_rev_num)
         % int
         image_te = 193;
         image_tr = 191;
-        
+
+        % char (byte offset from the start of the image header block;
+        % see spec2nii's GE/ge_hdr_fields.py for the source layout)
+        rhi_hdr_psdname = 1320; % 33 bytes
+
         % float
         image_user8  = 50;
         image_user11 = 53;
@@ -139,7 +150,7 @@ switch num2str(rdbm_rev_num)
         tlhc         = 133;
         trhc         = 136;
         brhc         = 139;
-        
+
     case {'20.006','20.007','24'}
         
         % int
@@ -165,7 +176,11 @@ switch num2str(rdbm_rev_num)
         % int
         image_te = 267;
         image_tr = 265;
-        
+
+        % char (byte offset from the start of the image header block;
+        % see spec2nii's GE/ge_hdr_fields.py for the source layout)
+        rhi_hdr_psdname = 1632; % 33 bytes
+
         % float
         image_user8  = 98;
         image_user11 = 101;
@@ -176,7 +191,7 @@ switch num2str(rdbm_rev_num)
         tlhc         = 181;
         trhc         = 184;
         brhc         = 187;
-        
+
     case {'26.002','27','27.001','28.002','28.003','30','30.1','31'}
         
         % int
@@ -202,8 +217,13 @@ switch num2str(rdbm_rev_num)
         % int
         image_te = 267;
         image_tr = 265;
-        rhi_hdr_psdname = 269;
-        
+
+        % char (byte offset from the start of the image header block;
+        % see spec2nii's GE/ge_hdr_fields.py for the source layout)
+        rhi_hdr_psdname  = 1632; % 33 bytes
+        rhi_hdr_projname = 1665; % 13 bytes
+        rhi_hdr_psdiname = 1678; % 13 bytes
+
         % float
         image_user8  = 98;
         image_user11 = 101;
@@ -280,14 +300,31 @@ hdr.version = rdbm_rev_num;
 hdr.nucleus = '1H';
 
 % Determine psd
-% out = GetSVHeader(fname);
-% hdr.seq = out.header.image.psdname;
-% hdr.seq = t_hdr_value(rhi_hdr_psdname);
-% if any(strcmpi(hdr.seq, {'slaser','oslaser'}))
+% Read the psd/protocol name fields directly out of the image header
+% (byte offsets rhi_hdr_psdname/rhi_hdr_projname/rhi_hdr_psdiname, derived
+% from spec2nii's GE header definitions in GE/ge_hdr_fields.py), so we
+% don't have to call out to GetSVHeader.
+if exist('rhi_hdr_psdname', 'var')
+    hdr.psdname = readGEHeaderString(fid, i_hdr_value(rdb_hdr_off_image) + rhi_hdr_psdname, 33);
+end
+if exist('rhi_hdr_projname', 'var')
+    hdr.projname = readGEHeaderString(fid, i_hdr_value(rdb_hdr_off_image) + rhi_hdr_projname, 13);
+end
+if exist('rhi_hdr_psdiname', 'var')
+    hdr.psdiname = readGEHeaderString(fid, i_hdr_value(rdb_hdr_off_image) + rhi_hdr_psdiname, 13);
+end
+
+% GE psd names are frequently suffixed with a site/study-specific tag
+% (e.g. 'PROBE-SL_ACH'), so match on known substrings rather than an
+% exact name. 'probe-sl'/'probe-p' are GE's canonical PROBE-spectroscopy
+% psd names for semi-LASER and PRESS localization, respectively.
+if isfield(hdr, 'psdname') && contains(hdr.psdname, {'slaser','probe-sl'}, 'IgnoreCase', true)
     hdr.seq = 'slaser';
-% elseif any(strcmpi(hdr.seq, {'jpress','gaba'}))
-    % hdr.seq = 'press';
-% end
+elseif isfield(hdr, 'psdname') && contains(hdr.psdname, {'jpress','gaba','probe-p'}, 'IgnoreCase', true)
+    hdr.seq = 'press';
+else
+    hdr.seq = 'press';
+end
 
 % Spectro prescan pfiles
 if npoints == 1 && nrows == 1
@@ -400,5 +437,19 @@ FullData = conj(squeeze(sum(FullData,1)));
 WaterData = WaterData .* repmat([1; 1i], [1 npoints waterframes nreceivers]);
 WaterData = conj(squeeze(sum(WaterData,1)));
 
+end
 
+function str = readGEHeaderString(fid, byteOffset, nBytes)
+% Read a fixed-length, null-terminated char field from the GE header at
+% the given absolute byte offset, and trim it to its null-terminated
+% content (plus any trailing whitespace).
+fseek(fid, byteOffset, 'bof');
+raw = fread(fid, nBytes, 'uint8=>char')';
+nullIdx = find(raw == 0, 1);
+if ~isempty(nullIdx)
+    raw = raw(1:nullIdx-1);
+end
+str = deblank(raw);
+
+end
 
