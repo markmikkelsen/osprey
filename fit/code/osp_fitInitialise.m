@@ -304,7 +304,7 @@ switch MRSCont.opts.fit.method
             % We need to determine whether the basis set is already
             % provided in .BASIS format, or whether it is supplied in
             % Osprey format (.mat), in which case we'll convert it.
-            [path, ~, ext] = fileparts(MRSCont.opts.fit.basisSetFile);
+            [basisSetFilepath, ~, ext] = fileparts(MRSCont.opts.fit.basisSetFile);
             if strcmpi(ext,'.mat')
                 % If it has the .mat extension, convert from Osprey format
                 % to LCModel format (.basis)
@@ -321,12 +321,13 @@ switch MRSCont.opts.fit.method
                 elseif MRSCont.flags.isHERCULES
                     seq = ['hermes' seq];
                 end
-
-                io_writelcmBASIS(basisSet, [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_A.BASIS'], MRSCont.vendor, seq, 1);
+                
+                tmpBasisSetFilename = [basisSetFilepath filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_A.BASIS'];
+                io_writelcmBASIS(basisSet, tmpBasisSetFilename, MRSCont.vendor, seq, 1);
                 % Save the newly generated .basis file back into the
                 % container.
                 MRSCont.opts.fit = rmfield(MRSCont.opts.fit,'basisSetFile');
-                MRSCont.opts.fit.basisSetFile{1} = [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_A.BASIS'];
+                MRSCont.opts.fit.basisSetFile{1} = tmpBasisSetFilename;
 
                 if MRSCont.flags.isMEGA
 
@@ -345,8 +346,8 @@ switch MRSCont.opts.fit.method
                                 basisSet.specs(:,:,3) = basisSetDiff1.specs;
                             end
                     end
-                    io_writelcmBASIS(basisSet, [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'], MRSCont.vendor, seq, 3);
-                    MRSCont.opts.fit.basisSetFile{2} = [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'];
+                    io_writelcmBASIS(basisSet, [basisSetFilepath filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'], MRSCont.vendor, seq, 3);
+                    MRSCont.opts.fit.basisSetFile{2} = [basisSetFilepath filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'];
 
                 elseif MRSCont.flags.isHERMES || MRSCont.flags.isHERCULES % MM (250628)
 
@@ -366,12 +367,17 @@ switch MRSCont.opts.fit.method
                             end
                     end
 
-                    io_writelcmBASIS(basisSet, [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'], MRSCont.vendor, seq, 5);
-                    MRSCont.opts.fit.basisSetFile{1} = [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'];
-                    io_writelcmBASIS(basisSet, [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff2.BASIS'], MRSCont.vendor, seq, 6);
-                    MRSCont.opts.fit.basisSetFile{2} = [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff2.BASIS'];
-                    io_writelcmBASIS(basisSet, [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_sum.BASIS'], MRSCont.vendor, seq, 7);
-                    MRSCont.opts.fit.basisSetFile{3} = [path filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_sum.BASIS'];
+                    tmpBasisSetFilename = [basisSetFilepath filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff1.BASIS'];
+                    io_writelcmBASIS(basisSet, tmpBasisSetFilename, MRSCont.vendor, seq, 5);
+                    MRSCont.opts.fit.basisSetFile{1} = tmpBasisSetFilename;
+                    
+                    tmpBasisSetFilename = [basisSetFilepath filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_diff2.BASIS'];
+                    io_writelcmBASIS(basisSet, tmpBasisSetFilename, MRSCont.vendor, seq, 6);
+                    MRSCont.opts.fit.basisSetFile{2} = tmpBasisSetFilename;
+                    
+                    tmpBasisSetFilename = [basisSetFilepath filesep Bo '_' seq '_' MRSCont.vendor '_' te 'ms_noMM_sum.BASIS'];
+                    io_writelcmBASIS(basisSet, tmpBasisSetFilename, MRSCont.vendor, seq, 7);
+                    MRSCont.opts.fit.basisSetFile{3} = tmpBasisSetFilename;
 
                 end
 
@@ -626,21 +632,55 @@ switch MRSCont.opts.fit.method
                     LCMparam = osp_editControlParameters(LCMparam, 'owner', '''Osprey processed spectra''');
                     LCMparam = osp_editControlParameters(LCMparam, 'filbas', ['''' basisSetFile{jj} '''']);
                     LCMparam = osp_editControlParameters(LCMparam, 'neach', '99');
-                    
+                    LCMparam = osp_editControlParameters(LCMparam, 'ppmst',  ['' sprintf('%4.2f', MRSCont.opts.fit.range(2)) '']);
+                    LCMparam = osp_editControlParameters(LCMparam, 'ppmend', ['' sprintf('%4.2f', MRSCont.opts.fit.range(1)) '']);
+                    LCMparam = osp_editControlParameters(LCMparam, 'chomit', chOmitList{jj});
+
+                    % Generic defaults; set before the edited-subspectrum
+                    % block below so its target-specific settings take
+                    % precedence (osp_editControlParameters overwrites keys)
+                    if isinf(MRSCont.opts.fit.bLineKnotSpace)
+                        LCMparam = osp_editControlParameters(LCMparam, 'nobase', 'T');
+                    else
+                        if any(strcmp(subspec{jj}, {'A','sum'}))
+                            LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.25');
+                        elseif any(strcmp(subspec{jj}, {'diff1','diff2'}))
+                            LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.55');
+                        end
+                    end
+
+                    if MRSCont.flags.isMEGA && strcmp(subspec{jj}, 'diff1') && any(strcmp(MRSCont.opts.editTarget{1}, {'GABA','GSH'}))
+                        LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''NAA+NAAG''');
+                    else
+                        LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''Cr+PCr'''); % MM (250410)
+                    end
+
+                    LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM09'''});
+
                     % MM: gate newer upstream GABA/Lac MM-simulation block to
                     % edited subspectra only (ported from pre-refactor single-diff1 loop)
                     if any(strcmp(subspec{jj}, {'diff1','diff2'}))
-                        if ~isinf(MRSCont.opts.fit.bLineKnotSpace)
-                            LCMparam = osp_editControlParameters(LCMparam, 'nobase', 'F');
+                        % Edit target of this subspectrum: diff1 -> 1st
+                        % target, diff2 -> 2nd target (HERMES/HERCULES)
+                        editTargets = cellstr(MRSCont.opts.editTarget);
+                        diffIdx     = find(strcmp(subspec{jj}, {'diff1','diff2'}));
+                        if diffIdx <= length(editTargets)
+                            currentTarget = editTargets{diffIdx};
                         else
-                            switch MRSCont.opts.editTarget{1}
+                            currentTarget = '';
+                        end
+
+                        % Target-specific knot spacing (only meaningful
+                        % when a baseline is fitted)
+                        if ~isinf(MRSCont.opts.fit.bLineKnotSpace)
+                            switch currentTarget
                                 case 'GABA'
-                                    LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.6');
+                                    LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.55');
                                 case 'Lac'
                                     LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '1.0');
                             end
                         end
-                        switch MRSCont.opts.editTarget{1}
+                        switch currentTarget
                             case 'GABA'
                                 LCMparam = osp_editControlParameters(LCMparam, 'sptype', '''mega-press-3''');
                                 switch MRSCont.opts.fit.coMM3
@@ -695,32 +735,7 @@ switch MRSCont.opts.fit.method
                                 % GO 11/2025 Add Lac+ output
                                 LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''NAA+NAAG''','''Glu+Gln''','''Lac+MM14''','''bHB+MM12'''});
                         end
-                        LCMparam = osp_editControlParameters(LCMparam, 'chomit', chOmitList{2});
                     end
-                    LCMparam = osp_editControlParameters(LCMparam, 'ppmst',  ['' sprintf('%4.2f', MRSCont.opts.fit.range(2)) '']);
-                    LCMparam = osp_editControlParameters(LCMparam, 'ppmend', ['' sprintf('%4.2f', MRSCont.opts.fit.range(1)) '']);
-                    LCMparam = osp_editControlParameters(LCMparam, 'chomit', chOmitList{jj});
-
-                    if isinf(MRSCont.opts.fit.bLineKnotSpace)
-                        LCMparam = osp_editControlParameters(LCMparam, 'nobase', 'T');
-                    % elseif (MRSCont.flags.isMEGA || MRSCont.flags.isHERMES || MRSCont.flags.isHERCULES) && ...
-                    %         strcmp(MRSCont.opts.editTarget{1}, 'GABA') && strcmp(subspec{jj}, 'diff1')
-                        % LCMparam = osp_editControlParameters(LCMparam, 'sptype', '''mega-press-3''');
-                    else
-                        if any(strcmp(subspec{jj}, {'A','sum'}))
-                            LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.25');
-                        elseif any(strcmp(subspec{jj}, {'diff1','diff2'}))
-                            LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.55');
-                        end
-                    end
-
-                    if MRSCont.flags.isMEGA && strcmp(subspec{jj}, {'diff1'}) && any(strcmp(MRSCont.opts.editTarget{1}, {'GABA','GSH'}))
-                        LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''NAA+NAAG''');
-                    else
-                        LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''Cr+PCr'''); % MM (250410)
-                    end
-
-                    LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM09'''});
 
                     % if (MRSCont.flags.isMEGA || MRSCont.flags.isHERMES || MRSCont.flags.isHERCULES) && ...
                     %         strcmp(MRSCont.opts.editTarget{1}, 'GABA') && strcmp(subspec{jj}, 'diff1')
@@ -789,16 +804,10 @@ switch MRSCont.opts.fit.method
                         LCMparam = osp_editControlParameters(LCMparam, 'dorefs', doRefsStr);
                     end
 
-                    % Gap in ppm axis
-                    if isfield(MRSCont.opts.fit, 'GAP')
-                        if isfield(MRSCont.opts.fit.GAP, 'A') && ~isempty(MRSCont.opts.fit.GAP.A)
-                            LCMparam = osp_editControlParameters(LCMparam, 'ppmgap11',  ['' sprintf('%4.2f', MRSCont.opts.fit.GAP.A(2)) '']);
-                            LCMparam = osp_editControlParameters(LCMparam, 'ppmgap21', ['' sprintf('%4.2f', MRSCont.opts.fit.GAP.A(1)) '']);
-                        end
-                        if isfield(MRSCont.opts.fit.GAP, 'diff1') && ~isempty(MRSCont.opts.fit.GAP.diff1)
-                            LCMparam = osp_editControlParameters(LCMparam, 'ppmgap11',  ['' sprintf('%4.2f', MRSCont.opts.fit.GAP.diff1(2)) '']);
-                            LCMparam = osp_editControlParameters(LCMparam, 'ppmgap21', ['' sprintf('%4.2f', MRSCont.opts.fit.GAP.diff1(1)) '']);
-                        end
+                    % Gap in ppm axis (specific to the current subspectrum)
+                    if isfield(MRSCont.opts.fit, 'GAP') && isfield(MRSCont.opts.fit.GAP, subspec{jj}) && ~isempty(MRSCont.opts.fit.GAP.(subspec{jj}))
+                        LCMparam = osp_editControlParameters(LCMparam, 'ppmgap11',  ['' sprintf('%4.2f', MRSCont.opts.fit.GAP.(subspec{jj})(2)) '']);
+                        LCMparam = osp_editControlParameters(LCMparam, 'ppmgap21', ['' sprintf('%4.2f', MRSCont.opts.fit.GAP.(subspec{jj})(1)) '']);
                     end
 
                     % Write control file
