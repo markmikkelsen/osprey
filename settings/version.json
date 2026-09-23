@@ -1,3 +1,4 @@
 {"Version": "2.9.6",
  "Date": "March 6, 2025",
-"Description": "First digit for major releases, second digit for regular compiled releases, third digit for each commit to the develop branch. "}
+ "ModVersion": "Mikkelsen version (260923)",
+"Description": "First digit for major releases, second digit for regular compiled releases, third digit for each commit to the develop branch. ModVersion identifies the Mikkelsen-modified build."}

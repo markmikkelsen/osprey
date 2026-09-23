@@ -43,13 +43,13 @@ if nargin < 3
 end
 
 %%% 0. PRINT OSPREY MOD VERSION
+VersionStruct  = getCurrentVersion;
 fprintf('\n');
-fprintf('Osprey - Mikkelsen version (260914)\n'); % MM (260914)
+fprintf('Osprey - %s\n', VersionStruct.ModVersion); % MM (260914)
 fprintf('\n');
 
 %%% 1. INITIALISE DATA CONTAINER WITH DEFAULT SETTINGS
 [MRSCont] = OspreySettings;
-VersionStruct  = getCurrentVersion;
 
 %%% 2. CHECK JOB INPUT FILE FORMAT %%%
 [~,~,ext] = fileparts(jobFile);
@@ -848,6 +848,7 @@ MRSCont.flags.isGUI     = GUI;
 MRSCont.flags.didJob        = 1;
 MRSCont.loadedJob           = jobFile;
 MRSCont.ver.Osp             = ['Osprey ' VersionStruct.Version];
+MRSCont.ver.OspMod          = VersionStruct.ModVersion;
 
 
 %%% 8. CHECK IF OUTPUT STRUCTURE ALREADY EXISTS IN OUTPUT FOLDER %%%
