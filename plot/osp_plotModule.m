@@ -984,12 +984,18 @@ out.PaperSize = [fig_pos(3) fig_pos(4)];
 % NB: test with exist, not which -- 'which' is an input argument here.
 if exist('exportapp','file') == 0
     saveas(out,fullfile(outputFolder,outputFile),'pdf');
+elseif MRSCont.opts.showFigs
+    % Figure is already on screen
+    exportapp(out,fullfile(outputFolder,outputFile));
 else
-    prevVis = out.Visible;
+    % Show the figure off-screen so it renders without flashing up
+    prevPos = out.Position;
+    out.Position(1:2) = -2 * screenSize(3:4);
     out.Visible = 'on';
     drawnow;
     exportapp(out,fullfile(outputFolder,outputFile));
-    out.Visible = prevVis;
+    out.Visible = 'off';
+    out.Position = prevPos;
 end
 h = findall(groot,'Type','figure');
 for ff = 1 : length(h)

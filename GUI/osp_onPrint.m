@@ -33,7 +33,7 @@ function osp_onPrint( ~, ~ ,gui)
     canvasSize(3)   = canvasSize(4) * (11/8.5);
     canvasSize(2)   = (screenSize(4) - canvasSize(4))/2;
     canvasSize(1)   = (screenSize(3) - canvasSize(3))/2;
-    out = figure('NumberTitle', 'off', 'Visible', 'on', 'Menu', 'none','Position', canvasSize,...
+    out = figure('NumberTitle', 'off', 'Visible', 'off', 'Menu', 'none','Position', canvasSize,...
                     'ToolBar', 'none', 'HandleVisibility', 'off', 'Renderer', 'painters', 'Color', gui.colormap.Background);
 
     Title = MRSCont.ver.Osp;
@@ -1004,15 +1004,16 @@ out.PaperSize = [fig_pos(3) fig_pos(4)];
 % MATLAB R2025b and newer refuse to print/saveas any figure that contains UI
 % components, and the layout above is built from GUI Layout Toolbox panels
 % (uix = uipanel) plus uicontrol info text. exportapp handles those, but it
-% only renders them if the figure is on screen, so show it briefly.
+% only renders them if the figure is on screen, so show it briefly off-screen
+% to avoid it flashing up.
 if exist('exportapp','file') == 0
     saveas(out,fullfile(outputFolder,outputFile),'pdf');
 else
-    prevVis = out.Visible;
+    realScreenSize = get(0,'ScreenSize');
+    out.Position(1:2) = -2 * realScreenSize(3:4);
     out.Visible = 'on';
     drawnow;
     exportapp(out,fullfile(outputFolder,outputFile));
-    out.Visible = prevVis;
 end
 close(out);
 end
