@@ -513,6 +513,10 @@ if ~isfield(MRSCont.opts, 'Order')
     MRSCont.opts.Order = [];
 end
 
+if ~isfield(MRSCont.opts, 'showFigs')
+    MRSCont.opts.showFigs = 1;
+end
+
 if ~isfield(MRSCont.opts, 'SubSpecAlignment')
     MRSCont.opts.SubSpecAlignment.mets = 'L2Norm';
     MRSCont.opts.SubSpecAlignment.mm = 'none';
