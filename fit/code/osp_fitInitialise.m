@@ -636,16 +636,32 @@ switch MRSCont.opts.fit.method
                     LCMparam = osp_editControlParameters(LCMparam, 'ppmend', ['' sprintf('%4.2f', MRSCont.opts.fit.range(1)) '']);
                     LCMparam = osp_editControlParameters(LCMparam, 'chomit', chOmitList{jj});
 
-                    % Generic defaults; set before the edited-subspectrum
-                    % block below so its target-specific settings take
-                    % precedence (osp_editControlParameters overwrites keys)
+                    % Edit target of this subspectrum: diff1 -> 1st
+                    % target, diff2 -> 2nd target (HERMES/HERCULES)
+                    currentTarget = '';
+                    if any(strcmp(subspec{jj}, {'diff1','diff2'}))
+                        editTargets = cellstr(MRSCont.opts.editTarget);
+                        diffIdx     = find(strcmp(subspec{jj}, {'diff1','diff2'}));
+                        if diffIdx <= length(editTargets)
+                            currentTarget = editTargets{diffIdx};
+                        end
+                    end
+
+                    % Baseline knot spacing: 0.25 ppm for A/sum; target-
+                    % specific for edited diff spectra (GABA/GSH 0.55 ppm,
+                    % Lac 1.0 ppm)
                     if isinf(MRSCont.opts.fit.bLineKnotSpace)
                         LCMparam = osp_editControlParameters(LCMparam, 'nobase', 'T');
                     else
                         if any(strcmp(subspec{jj}, {'A','sum'}))
                             LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.25');
                         elseif any(strcmp(subspec{jj}, {'diff1','diff2'}))
-                            LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.55');
+                            switch currentTarget
+                                case 'Lac'
+                                    LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '1.0');
+                                otherwise % GABA, GSH, everything else
+                                    LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.55');
+                            end
                         end
                     end
 
@@ -659,83 +675,66 @@ switch MRSCont.opts.fit.method
 
                     % MM: gate newer upstream GABA/Lac MM-simulation block to
                     % edited subspectra only (ported from pre-refactor single-diff1 loop)
-                    if any(strcmp(subspec{jj}, {'diff1','diff2'}))
-                        % Edit target of this subspectrum: diff1 -> 1st
-                        % target, diff2 -> 2nd target (HERMES/HERCULES)
-                        editTargets = cellstr(MRSCont.opts.editTarget);
-                        diffIdx     = find(strcmp(subspec{jj}, {'diff1','diff2'}));
-                        if diffIdx <= length(editTargets)
-                            currentTarget = editTargets{diffIdx};
-                        else
-                            currentTarget = '';
-                        end
-
-                        % Target-specific knot spacing (only meaningful
-                        % when a baseline is fitted)
-                        if ~isinf(MRSCont.opts.fit.bLineKnotSpace)
-                            switch currentTarget
-                                case 'GABA'
-                                    LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.55');
-                                case 'Lac'
-                                    LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '1.0');
-                            end
-                        end
-                        switch currentTarget
-                            case 'GABA'
-                                LCMparam = osp_editControlParameters(LCMparam, 'sptype', '''mega-press-3''');
-                                switch MRSCont.opts.fit.coMM3
-                                    case {'3to2MM'}
-                                        LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '1');
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {['''' sprintf('MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3. @ 3.0 FWHM= %4.2f AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM09'''});
-                                    case {'none','1to1GABA'}
-                                        LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '1');
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.'''});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau'''});
-                                    case {'fixedGauss'}
-                                        LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.''',...
-                                            ['''' sprintf('MM30 @ 3.0  +- .02 FWHM= .085 <  %4.2f +- .35 AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM30'''});
-                                    case {'1to1GABAsoft'}
-                                        LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.''',...
-                                            ['''' sprintf('MM30 @ 3.0  +- .02 FWHM= .085 <  %4.2f +- .35 AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM30'''});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chrato', {'''GABA/MM30 = 1.0 +- .1'''});
-                                    case {'3to2MMsoft'}
-                                        LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.''',...
-                                            ['''' sprintf('MM30 @ 3.0 +- .02 FWHM= .085 <  %4.2f +- .35 AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM30'''});
-                                        LCMparam = osp_editControlParameters(LCMparam, 'chrato', {'''MM30/MM09 = 0.66 +- .2'''});
-                                end
-                                LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''NAA+NAAG''');
-                            case 'Lac'
-                                % GO 11/2025 Add some empirical MMs
-                                % For now, I'll just add the ~1.41-ppm one,
-                                % since it's larger and has less overlap (the
-                                % 1.21-ppm one will very heavily overlap with
-                                % bHB). Assume 14 Hz Lorentzian LW for now.
-                                % According to Landheer (10.1002/mrm.28282),
-                                % the 1.4-ppm MM has T2 ~18 Hz
-                                % See discussion in Dacko & Lange, NMR Biomed 2019;32:e4100 (see also Dacko & Lange, MRM 2021;85:1160-1174)
-                                % GO 01/2026 Add experimental MM12
-                                LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
-                                LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM12 @ 1.21 +- .02 FWHM= .085 <  .114 +- .35 AMP= 2.''', ...
-                                    '''MM14 @ 1.41 +- .02 FWHM= .085 <  .114 +- .35 AMP= 2.'''});
-                                LCMparam = osp_editControlParameters(LCMparam, 'chrato', {'''MM12/MM14 = 0.25 +- .1'''});
-                                % GO 11/2025 Specify the reference singlet (needs to be in
-                                % the basis set!
-                                LCMparam = osp_editControlParameters(LCMparam, 'wsmet', '''Lac''');
-                                LCMparam = osp_editControlParameters(LCMparam, 'wsppm', '0.0');
-                                LCMparam = osp_editControlParameters(LCMparam, 'n1hmet', '1');
-                                % GO 11/2025 Compare to tNAA
-                                LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''NAA+NAAG''');
-                                % GO 11/2025 Add Lac+ output
-                                LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''NAA+NAAG''','''Glu+Gln''','''Lac+MM14''','''bHB+MM12'''});
-                        end
-                    end
+                    % MM: disabled to match OpenNeuro (ds005371) behaviour: LCModel
+                    % uses its default simulated MM/lipid set instead of sptype
+                    % mega-press-3 + explicit chsimu/namrel for edited subspectra
+                    % if any(strcmp(subspec{jj}, {'diff1','diff2'}))
+                        % switch currentTarget
+                            % case 'GABA'
+                                % LCMparam = osp_editControlParameters(LCMparam, 'sptype', '''mega-press-3''');
+                                % switch MRSCont.opts.fit.coMM3
+                                    % case {'3to2MM'}
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '1');
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {['''' sprintf('MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3. @ 3.0 FWHM= %4.2f AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM09'''});
+                                    % case {'none','1to1GABA'}
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '1');
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.'''});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau'''});
+                                    % case {'fixedGauss'}
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.''',...
+                                            % ['''' sprintf('MM30 @ 3.0  +- .02 FWHM= .085 <  %4.2f +- .35 AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM30'''});
+                                    % case {'1to1GABAsoft'}
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.''',...
+                                            % ['''' sprintf('MM30 @ 3.0  +- .02 FWHM= .085 <  %4.2f +- .35 AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM30'''});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chrato', {'''GABA/MM30 = 1.0 +- .1'''});
+                                    % case {'3to2MMsoft'}
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM09 @ 0.915 +- .02 FWHM= .085 < .1 +- .35 AMP= 3.''',...
+                                            % ['''' sprintf('MM30 @ 3.0 +- .02 FWHM= .085 <  %4.2f +- .35 AMP= 2.',MRSCont.opts.fit.FWHMcoMM3/(MRSCont.processed.metab{kk}.txfrq/1000000)) '''']});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''PCh+GPC''','''Cr+PCr''','''NAA+NAAG''','''Glu+Gln''','''Glc+Tau''','''GABA+MM30'''});
+                                        % LCMparam = osp_editControlParameters(LCMparam, 'chrato', {'''MM30/MM09 = 0.66 +- .2'''});
+                                % end
+                                % LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''NAA+NAAG''');
+                            % case 'Lac'
+                                % % GO 11/2025 Add some empirical MMs
+                                % % For now, I'll just add the ~1.41-ppm one,
+                                % % since it's larger and has less overlap (the
+                                % % 1.21-ppm one will very heavily overlap with
+                                % % bHB). Assume 14 Hz Lorentzian LW for now.
+                                % % According to Landheer (10.1002/mrm.28282),
+                                % % the 1.4-ppm MM has T2 ~18 Hz
+                                % % See discussion in Dacko & Lange, NMR Biomed 2019;32:e4100 (see also Dacko & Lange, MRM 2021;85:1160-1174)
+                                % % GO 01/2026 Add experimental MM12
+                                % LCMparam = osp_editControlParameters(LCMparam, 'nsimul', '2');
+                                % LCMparam = osp_editControlParameters(LCMparam, 'chsimu', {'''MM12 @ 1.21 +- .02 FWHM= .085 <  .114 +- .35 AMP= 2.''', ...
+                                    % '''MM14 @ 1.41 +- .02 FWHM= .085 <  .114 +- .35 AMP= 2.'''});
+                                % LCMparam = osp_editControlParameters(LCMparam, 'chrato', {'''MM12/MM14 = 0.25 +- .1'''});
+                                % % GO 11/2025 Specify the reference singlet (needs to be in
+                                % % the basis set!
+                                % LCMparam = osp_editControlParameters(LCMparam, 'wsmet', '''Lac''');
+                                % LCMparam = osp_editControlParameters(LCMparam, 'wsppm', '0.0');
+                                % LCMparam = osp_editControlParameters(LCMparam, 'n1hmet', '1');
+                                % % GO 11/2025 Compare to tNAA
+                                % LCMparam = osp_editControlParameters(LCMparam, 'namrel', '''NAA+NAAG''');
+                                % % GO 11/2025 Add Lac+ output
+                                % LCMparam = osp_editControlParameters(LCMparam, 'chcomb', {'''NAA+NAAG''','''Glu+Gln''','''Lac+MM14''','''bHB+MM12'''});
+                        % end
+                    % end
 
                     % if (MRSCont.flags.isMEGA || MRSCont.flags.isHERMES || MRSCont.flags.isHERCULES) && ...
                     %         strcmp(MRSCont.opts.editTarget{1}, 'GABA') && strcmp(subspec{jj}, 'diff1')
