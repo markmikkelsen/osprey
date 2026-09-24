@@ -980,7 +980,8 @@ out.PaperSize = [fig_pos(3) fig_pos(4)];
 % MATLAB R2025b and newer refuse to print/saveas any figure that contains
 % UI components, and the layout above is built from GUI Layout Toolbox
 % panels (uix = uipanel) plus uicontrol info text. exportapp handles those,
-% but it only renders them if the figure is on screen, so show it briefly.
+% but it only renders them properly if the figure is on screen, so show it
+% briefly when figures are hidden.
 % NB: test with exist, not which -- 'which' is an input argument here.
 if exist('exportapp','file') == 0
     saveas(out,fullfile(outputFolder,outputFile),'pdf');
@@ -988,14 +989,10 @@ elseif MRSCont.opts.showFigs
     % Figure is already on screen
     exportapp(out,fullfile(outputFolder,outputFile));
 else
-    % Show the figure off-screen so it renders without flashing up
-    prevPos = out.Position;
-    out.Position(1:2) = -2 * screenSize(3:4);
     out.Visible = 'on';
     drawnow;
     exportapp(out,fullfile(outputFolder,outputFile));
     out.Visible = 'off';
-    out.Position = prevPos;
 end
 h = findall(groot,'Type','figure');
 for ff = 1 : length(h)
