@@ -647,13 +647,14 @@ switch MRSCont.opts.fit.method
                         end
                     end
 
-                    % Baseline knot spacing: 0.25 ppm for A/sum; target-
-                    % specific for edited diff spectra (GABA/GSH 0.55 ppm,
-                    % Lac 1.0 ppm)
+                    % Baseline knot spacing: LCModel default for A spectra of
+                    % unedited data; 0.25 ppm for A (MEGA) and sum;
+                    % target-specific for edited diff spectra (GABA/GSH
+                    % 0.55 ppm, Lac 1.0 ppm)
                     if isinf(MRSCont.opts.fit.bLineKnotSpace)
                         LCMparam = osp_editControlParameters(LCMparam, 'nobase', 'T');
                     else
-                        if any(strcmp(subspec{jj}, {'A','sum'}))
+                        if strcmp(subspec{jj}, 'sum') || (strcmp(subspec{jj}, 'A') && MRSCont.flags.isMEGA)
                             LCMparam = osp_editControlParameters(LCMparam, 'dkntmn', '0.25');
                         elseif any(strcmp(subspec{jj}, {'diff1','diff2'}))
                             switch currentTarget
