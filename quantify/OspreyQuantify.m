@@ -234,8 +234,14 @@ for kk = 1:MRSCont.nDatasets(1)
             end
         else
             % Get WCONC, ATTMET, and ATTH2O from control file
-            % LCMparam = osp_readlcm_control(MRSCont.opts.fit.lcmodel.controlfileA{kk});
-            LCMparam = osp_readlcm_control(MRSCont.opts.fit.lcmodel.controlfileDiff1{kk}); % MM
+            % Unedited/MEGA data have a control file for subspectrum A;
+            % HERMES/HERCULES data only have diff1/diff2/sum control files
+            if isfield(MRSCont.opts.fit.lcmodel, 'controlfileA')
+                controlfileWater = MRSCont.opts.fit.lcmodel.controlfileA{kk};
+            else
+                controlfileWater = MRSCont.opts.fit.lcmodel.controlfileDiff1{kk};
+            end
+            LCMparam = osp_readlcm_control(controlfileWater);
             if isfield(LCMparam, 'WCONC') || isfield(LCMparam, 'wconc') % User-supplied WCONC
                 try
                     amplWater = str2double(LCMparam.WCONC);
