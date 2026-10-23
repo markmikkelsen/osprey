@@ -18,7 +18,7 @@ else
 end
 
 spec_plot_dir = fullfile(MRSCont.outputFolder, 'Figures', 'OspreyProcess', ...
-    'avg_subspecs', routine);
+    'AvgSubspec', routine);
 if ~exist(spec_plot_dir, 'dir')
     mkdir(spec_plot_dir);
 end
