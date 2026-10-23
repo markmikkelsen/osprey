@@ -241,6 +241,9 @@ for kk = 1:MRSCont.nDatasets(1) %Subject loop
             if MRSCont.flags.isSPECIAL
                 raw = combine_special_subspecs(raw);
             end
+
+%%          %%% PLOT SUBSPECTRA
+            osp_plotAvgSubspec(MRSCont, kk, raw, seq, '1_pre_alignment');
         
 %%          %%% 3. FREQUENCY/PHASE CORRECTION AND AVERAGING %%%
             if raw.averages > 1 && raw.flags.averaged == 0
@@ -355,6 +358,9 @@ for kk = 1:MRSCont.nDatasets(1) %Subject loop
 %%          %%% 3a. APODIZATION %%% MM (220801)
 
 %             raw = op_filter(raw, 3); % 3-Hz exponential filter
+
+%%          %%% PLOT SUBSPECTRA
+            osp_plotAvgSubspec(MRSCont, kk, raw, seq, '2_post_alignment');
 
 %%          %%% 4. GET REFERENCE DATA / EDDY CURRENT CORRECTION %%%
             % If there are reference scans, load them here to allow eddy-current
@@ -658,6 +664,9 @@ for kk = 1:MRSCont.nDatasets(1) %Subject loop
                 raw = op_add_analysis_provenance(raw,fields);
                 
             end
+
+%%          %%% PLOT SUBSPECTRA
+            osp_plotAvgSubspec(MRSCont, kk, raw, seq, '3_post_combo');
             
 %%          %%% 7. REMOVE RESIDUAL WATER %%%
             % Define different water removal frequency ranges, depending on
@@ -678,6 +687,9 @@ for kk = 1:MRSCont.nDatasets(1) %Subject loop
             if MRSCont.flags.hasMM %re_mm
                 raw_mm = op_iterativeWaterFilter(raw_mm, waterRemovalFreqRange, 32, fracFID*length(raw_mm.fids), 0);
             end
+
+%%          %%% PLOT SUBSPECTRA
+            osp_plotAvgSubspec(MRSCont, kk, raw, seq, '4_post_water_removal');
 
 %%          %%% 8. REFERENCE SPECTRUM CORRECTLY TO FREQUENCY AXIS AND PHASE SIEMENS
             %%% DATA
