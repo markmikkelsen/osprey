@@ -296,6 +296,23 @@ elseif MRSCont.flags.isMRSI && ~strcmp(MRSCont.datatype,'DATA')
     [MRSCont] = osp_MRSIRecon(MRSCont);
 end
 
+% Plot averaged subspectra after coil combination (edited data only)
+if ~MRSCont.flags.isPRIAM && ~MRSCont.flags.isMRSI && ~MRSCont.flags.isUnEdited
+    if MRSCont.flags.isHERMES
+        seq = 'HERMES';
+    elseif MRSCont.flags.isHERCULES
+        seq = 'HERCULES';
+    else
+        seq = 'MEGA';
+    end
+    for kk = 1:MRSCont.nDatasets(1)
+        if MRSCont.raw{kk}.dims.subSpecs > 0
+            osp_plotAvgSubspec(MRSCont, kk, MRSCont.raw{kk}, seq, ...
+                '0_post_coil_combo');
+        end
+    end
+end
+
 if MRSCont.flags.isUnEdited
     for kk = 1:MRSCont.nDatasets(1)
         raw                         = MRSCont.raw{kk};                                          % Get the kk-th dataset

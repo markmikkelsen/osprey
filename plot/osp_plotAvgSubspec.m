@@ -1,8 +1,8 @@
 function osp_plotAvgSubspec(MRSCont, ii, in, seq, routine)
-% Plot and print the averaged ON/OFF (MEGA) or A–D subspectra (HERMES)
+% Plot and print the averaged ON/OFF (MEGA) or A–D subspectra (HERMES/HERCULES)
 % This is mostly useful for debugging or assessing data quality issues
 
-if strcmp(seq, 'HERMES')
+if any(strcmp(seq, {'HERMES', 'HERCULES'}))
     n_subspec = 4;
     experiment = {'A','B','C','D'};
 else
@@ -17,8 +17,8 @@ else
     subspecs = real(in.specs);
 end
 
-spec_plot_dir = fullfile(MRSCont.outputFolder, 'Figures', 'OspreyProcess', ...
-    'AvgSubspec', routine);
+spec_plot_dir = fullfile(MRSCont.outputFolder, 'Figures', 'SubspecPlots', ...
+    routine);
 if ~exist(spec_plot_dir, 'dir')
     mkdir(spec_plot_dir);
 end
@@ -33,7 +33,7 @@ end
 
 % First, plot subspectra separately
 figDims.w = 0.7;
-if strcmp(seq, 'HERMES')
+if any(strcmp(seq, {'HERMES', 'HERCULES'}))
     figDims.h = 0.7;
 else
     figDims.h = 0.5;
@@ -54,7 +54,7 @@ for jj = 1:n_subspec
 end
 
 [~,fname] = fileparts(MRSCont.files{ii});
-if strcmp(seq, 'HERMES')
+if any(strcmp(seq, {'HERMES', 'HERCULES'}))
     png_name = fullfile(spec_plot_dir, [fname '_A-D_subspec_separate.png']);
 else
     png_name = fullfile(spec_plot_dir, [fname '_ON_OFF_subspec_separate.png']);
@@ -79,7 +79,7 @@ end
 hold off;
 legend(experiment, 'FontSize', 20, 'Box', 'off', 'Location', 'northeast');
 
-if strcmp(seq, 'HERMES')
+if any(strcmp(seq, {'HERMES', 'HERCULES'}))
     png_name = fullfile(spec_plot_dir, [fname '_A-D_subspec_overlapped.png']);
 else
     png_name = fullfile(spec_plot_dir, [fname '_ON_OFF_subspec_overlapped.png']);
