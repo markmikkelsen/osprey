@@ -63,15 +63,15 @@ avfids=av.fids;
 avspecs=av.specs;
 
 if strcmp(mode,'gls') && nargin==4
-    noisepts=false(1,in.sz(in.dims.t));
-    noisepts(ceil(0.75*in.sz(in.dims.t)):end)=true;
-    if in.subspecs>1
-        noisepts=repmat(noisepts,[1 in.sz(in.dims.averages)*in.sz(in.dims.subSpecs)]);
-        tmpfids=reshape(in.fids,[in.sz(in.dims.coils) in.sz(in.dims.t)*in.sz(in.dims.averages)*in.sz(in.dims.subSpecs)]);
-    else
-        noisepts=repmat(noisepts,[1 in.sz(in.dims.averages)]);
-        tmpfids=reshape(in.fids,[in.sz(in.dims.coils) in.sz(in.dims.t)*in.sz(in.dims.averages)]);
-    end
+    nCh  = in.sz(in.dims.coils);
+    nPts = in.sz(in.dims.t);
+    % Put coils in dim 1 and time in dim 2 so that each column of tmpfids
+    % is one time point of one transient (cf. GERead.m in Gannet)
+    order   = [in.dims.coils, in.dims.t, setdiff(1:ndims(in.fids), [in.dims.coils in.dims.t])];
+    tmpfids = reshape(permute(in.fids, order), nCh, []);
+    noisepts = false(1,nPts);
+    noisepts(ceil(0.75*nPts):end) = true;
+    noisepts = repmat(noisepts, [1 size(tmpfids,2)/nPts]);
 
     e=tmpfids(:,noisepts);
     Psi=e*e';
